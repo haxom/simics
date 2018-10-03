@@ -9,6 +9,12 @@ Les différents projets sont indépendants les uns des autres, même s'ils ont d
  * Une configuration I/O avec les GPIO du Raspberry PI (pas systématique) et des équipements électroniques (moteurs, LED, capteurs, etc.)
  * Des modèles d'impression pour imprimante 3D (pas systématique)
 
+## Dépendances
+ * [pymodbys](https://github.com/riptideio/pymodbus)
+```
+$ pip install pymodbus --user
+```
+
 ## Projets
 
  * [in progress] Processus d'un portail électrique
