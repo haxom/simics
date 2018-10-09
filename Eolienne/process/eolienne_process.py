@@ -122,7 +122,7 @@ def loop_process():
 
             # otherwise, running
             # [production] P = 0.29 * D^2 * v^3
-            #   P = power (kW)
+            #   P = power (W)
             #   D = rotor diameter = 24m
             #   v = wind speed (m/s)
 
