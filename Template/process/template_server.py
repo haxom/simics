@@ -53,4 +53,5 @@ if __name__ == '__main__':
     except Exception as err:
         print '[error] Can\'t init Modbus server ...'
         print '[error] %s' % err
+        print '[error] exiting...'
         sys.exit(1)
