@@ -14,7 +14,7 @@ Les différents projets sont indépendants les uns des autres, même s'ils ont d
 ```
 $ pip install pymodbus --user
 ```
-* [RPi.GPIO]() : required for using Rapsberry PI's GPIO as I/O
+* [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/) : required for using Rapsberry PI's GPIO as I/O
 ```
 $ pip install RPi.GPIO --user
 ```
