@@ -13,6 +13,9 @@ import sys
 import signal
 from time import sleep
 
+# Only use to init Modbus coils with random values
+from random import getrandbits as randbits
+
 # Params
 modbus_server_ip = '127.0.0.1'
 modbus_server_port = 5002
@@ -25,8 +28,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def initdb():
     client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
-    for registre in range(1,21):
-        client.write_coil(registre, False)
+    for registre in range(0,20):
+        client.write_coil(registre, bool(randbits(1)))
 
 def loop_process():
     # Main Process (template = flip-flop)
