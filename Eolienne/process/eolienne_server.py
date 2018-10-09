@@ -2,7 +2,7 @@
 #coding=utf8
 __author__      = 'haxom'
 __email__       = 'haxom@haxom.net'
-__file__        = 'template_server.py'
+__file__        = 'eolienne_server.py'
 __version__     = '0.1a'
 
 # pymodbus

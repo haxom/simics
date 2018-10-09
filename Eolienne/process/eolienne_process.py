@@ -2,7 +2,7 @@
 #coding=utf8
 __author__      = 'haxom'
 __email__       = 'haxom@haxom.net'
-__file__        = 'template.py'
+__file__        = 'eolienne_process.py'
 __version__     = '0.1a'
 
 # Options
