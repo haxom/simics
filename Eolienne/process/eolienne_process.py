@@ -3,7 +3,7 @@
 __author__      = 'haxom'
 __email__       = 'haxom@haxom.net'
 __file__        = 'eolienne_process.py'
-__version__     = '0.1a'
+__version__     = '1.0'
 
 # Options
 modbus_server_ip = '127.0.0.1'
