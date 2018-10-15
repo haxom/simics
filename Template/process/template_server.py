@@ -3,7 +3,7 @@
 __author__      = 'haxom'
 __email__       = 'haxom@haxom.net'
 __file__        = 'template_server.py'
-__version__     = '0.1a'
+__version__     = '1.0'
 
 # pymodbus
 from pymodbus.server.sync import StartTcpServer
