@@ -3,7 +3,7 @@
 __author__      = 'haxom'
 __email__       = 'haxom@haxom.net'
 __file__        = 'eolienne_server.py'
-__version__     = '0.1a'
+__version__     = '1.0'
 
 # pymodbus
 from pymodbus.server.sync import StartTcpServer
@@ -18,7 +18,7 @@ import sys
 import signal
 
 # Params
-listen_int = '127.0.0.1'
+listen_int = '0.0.0.0'
 listen_port = 5002
 
 def signal_handler(sig, frame):
