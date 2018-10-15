@@ -1,4 +1,9 @@
 <?php
+	/*
+	@author	haxom <haxom@haxom.net>
+	@version 1.0
+	*/
+
 	// import PhpModbus
 	require_once './phpmodbus/ModbusMaster.php';
 	$modbus = new ModbusMaster("172.17.0.1", "TCP");
