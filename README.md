@@ -5,7 +5,7 @@ Ce dépôt GIT contient un ensemble de projets de simulations de processus indus
 Les différents projets sont indépendants les uns des autres, même s'ils ont des bases communes :
  * Un script de simulation du processus industriel, codé en Python
  * Une base de registres (coil / registers) accessibles avec le protocole ModBus
- * Une IHM représentant le processus et permettant des actions simples (état de capteur, actionneurs, etc.), codé en PHP
+ * Une IHM représentant le processus et permettant des actions simples (état de capteur, actionneurs, etc.), codée en PHP
  * Une configuration I/O avec les GPIO du Raspberry PI (pas systématique) et des équipements électroniques (moteurs, LED, capteurs, etc.)
  * Des modèles d'impression pour imprimante 3D (pas systématique)
 
