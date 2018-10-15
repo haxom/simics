@@ -77,7 +77,7 @@ def loop_process():
             if gust_cmp == 0:
                 gust_state = 3
         
-        if randint(0, 20) == 10:
+        if randint(0, 20) == 10 and gust_state == 0:
             gust_state = 1
             gust_cmp += 5
 
