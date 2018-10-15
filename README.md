@@ -14,9 +14,14 @@ Les différents projets sont indépendants les uns des autres, même s'ils ont d
 ```
 $ pip install pymodbus --user
 ```
-* [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/) : required for using Rapsberry PI's GPIO as I/O
+ * [RPi.GPIO](https://sourceforge.net/projects/raspberry-gpio-python/) : required for the use of Raspberry PI's GPIO
 ```
 $ pip install RPi.GPIO --user
+```
+
+ * [PhpModbus](https://github.com/krakorj/phpmodbus/) : required for web HMI
+```
+already included in the projects
 ```
 
 ## Projets
