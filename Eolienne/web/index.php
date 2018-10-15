@@ -20,7 +20,9 @@
 			case "readAll":
 				$output = Array();
 				$output['coils'] = $modbus->readCoils($unitId, 0, 2);
-				$output['registers'] = $modbus->readMultipleRegisters($unitId, 0, 2);
+				$registers = array_chunk($modbus->readMultipleRegisters($unitId, 0, 2), 2);
+				foreach($registers as $key => $value)
+					$output['registers'][$key] = PhpType::bytes2unsignedInt($value);
 				print json_encode($output);
 				exit();
 		}
