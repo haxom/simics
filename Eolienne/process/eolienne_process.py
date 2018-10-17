@@ -110,6 +110,8 @@ def loop_process():
             # manual stop
             if not coils[0]:
                 print '[stop manually]'
+                registers[1] = 0
+                client.write_registers(0, registers)
                 continue
             # wind speed to slow/quick
             if registers[0] < 4 or registers[0] > 25:
