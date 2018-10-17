@@ -29,10 +29,10 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def init():
     store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100)
+        di=ModbusSequentialDataBlock(0, [0]*10),
+        co=ModbusSequentialDataBlock(0, [0]*10),
+        hr=ModbusSequentialDataBlock(0, [0]*10),
+        ir=ModbusSequentialDataBlock(0, [0]*10)
     )
     context = ModbusServerContext(slaves=store, single=True)
 
