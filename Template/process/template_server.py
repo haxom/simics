@@ -20,6 +20,7 @@ import signal
 # Params
 listen_int = '0.0.0.0'
 listen_port = 5002
+UNIT=0x42
 
 def signal_handler(sig, frame):
     print 'CTRL+C pressed, exiting...'
@@ -28,13 +29,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def init():
-    store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17]*100),
-        co=ModbusSequentialDataBlock(0, [17]*100),
-        hr=ModbusSequentialDataBlock(0, [17]*100),
-        ir=ModbusSequentialDataBlock(0, [17]*100)
-    )
-    context = ModbusServerContext(slaves=store, single=True)
+    slaves = {
+        UNIT: ModbusSlaveContext(
+            di=ModbusSequentialDataBlock(0, [17]*100),
+            co=ModbusSequentialDataBlock(0, [17]*100),
+            hr=ModbusSequentialDataBlock(0, [17]*100),
+            ir=ModbusSequentialDataBlock(0, [17]*100)
+        )
+    }
+    context = ModbusServerContext(slaves=slaves, single=False)
 
     identity = ModbusDeviceIdentification()
     identity.VendorName = ''

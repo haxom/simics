@@ -9,6 +9,7 @@ __version__     = '1.0'
 modbus_server_ip = '127.0.0.1'
 modbus_server_port = 5002
 GPIO = False
+UNIT = 0x42
 
 # pymodbus
 from pymodbus.client.sync import ModbusTcpClient
@@ -35,8 +36,8 @@ def initdb():
     try:
         client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
         for registre in range(0,10):
-            client.write_coil(registre, bool(randbits(1)))
-            client.write_register(registre, bool(randbits(1)))
+            client.write_coil(registre, bool(randbits(1)), unit=UNIT)
+            client.write_register(registre, bool(randbits(1)), unit=UNIT)
     except Exception as err:
         print '[error] Can\'t init the Modbus coils'
         print '[error] %s' % err
@@ -61,21 +62,22 @@ def loop_process():
         try:
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
 
-            coils = client.read_coils(0, count=registre_count)
+            coils = client.read_coils(0, count=registre_count, unit=UNIT)
             coils = coils.bits[:registre_count]
             # flipping booleans from list coils
             coils = [not i for i in coils]
             client.write_coils(0, coils)
 
-            registers = client.read_holding_registers(0, count=registre_count)
+            registers = client.read_holding_registers(0, count=registre_count, unit=UNIT)
             registers = registers.registers[:registre_count]
             registers = [i+1 for i in registers]
-            client.write_registers(0, registers)
+            client.write_registers(0, registers, unit=UNIT)
 
             updateGPIO(coils, registers)
         except Exception as err:
             print '[error] %s' % err
             err_count += 1
+            sleep(1)
             if err_count == 5:
                 print '[error] 5 errors happened in the process ! exiting...'
                 sys.exit(1)
