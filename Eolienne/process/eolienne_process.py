@@ -139,7 +139,6 @@ def loop_process():
         except Exception as err:
             print '[error] %s' % err
             err_count += 1
-            sleep(1)
             if err_count == 5:
                 print '[error] 5 errors happened in the process ! exiting...'
                 sys.exit(1)
@@ -161,6 +160,7 @@ def updateGPIO(coils=[], registers=[]):
 
     
 if __name__ == '__main__':
+    sleep(10)
     initdb()
     initGPIO()
     loop_process()
