@@ -91,7 +91,7 @@ def loop_process():
             registers = registers[:2]
 
             # update wind speed
-            speed = registers[0]
+            ## speed = registers[0]
             if randbits(1):
                 speed += 1
             else:
