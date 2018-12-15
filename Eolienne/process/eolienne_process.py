@@ -9,6 +9,7 @@ __version__     = '1.0'
 modbus_server_ip = '127.0.0.1'
 modbus_server_port = 5002
 GPIO = False
+UNIT=0x42
 
 # pymodbus
 from pymodbus.client.sync import ModbusTcpClient
@@ -44,8 +45,8 @@ def initdb():
         # 10 : wind speed (m/s)
         # 11 : power production (kW)
         
-        client.write_coils(0, [True, True])
-        client.write_registers(0, [10, 0])
+        client.write_coils(0, [True, True], unit=UNIT)
+        client.write_registers(0, [10, 0], unit=UNIT)
     except Exception as err:
         print '[error] Can\'t init the Modbus coils'
         print '[error] %s' % err
@@ -84,9 +85,9 @@ def loop_process():
         try:
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
 
-            coils = client.read_coils(0, count=2).bits
+            coils = client.read_coils(0, count=2, unit=UNIT).bits
             coils = coils[:2]
-            registers = client.read_holding_registers(0, count=2).registers
+            registers = client.read_holding_registers(0, count=2, unit=UNIT).registers
             registers = registers[:2]
 
             # update wind speed
@@ -111,13 +112,13 @@ def loop_process():
             if not coils[0]:
                 print '[stop manually]'
                 registers[1] = 0
-                client.write_registers(0, registers)
+                client.write_registers(0, registers, unit=UNIT)
                 continue
             # wind speed to slow/quick
             if registers[0] < 4 or registers[0] > 25:
                 print '[stop due to the wind speed] (%d m/s)' % registers[0]
                 coils[1] = False
-                client.write_coil(1, False)
+                client.write_coil(1, False, unit=UNIT)
                 continue
             else:
                 coils[1] = True
@@ -131,8 +132,8 @@ def loop_process():
             registers[1] = (0.29 * pow(24, 2) * pow(registers[0], 3))/1000
             print 'producting %d kW (%d m/s)' % (registers[1], registers[0])
 
-            client.write_coils(0, coils)
-            client.write_registers(0, registers)
+            client.write_coils(0, coils, unit=UNIT)
+            client.write_registers(0, registers, unit=UNIT)
 
             #updateGPIO(coils, registers)
         except Exception as err:

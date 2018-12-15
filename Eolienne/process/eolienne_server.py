@@ -18,7 +18,7 @@ import sys
 import signal
 
 # Params
-listen_int = '0.0.0.0'
+listen_int = '127.0.0.1'
 listen_port = 5002
 
 def signal_handler(sig, frame):
@@ -28,13 +28,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 def init():
-    store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [0]*10),
-        co=ModbusSequentialDataBlock(0, [0]*10),
-        hr=ModbusSequentialDataBlock(0, [0]*10),
-        ir=ModbusSequentialDataBlock(0, [0]*10)
-    )
-    context = ModbusServerContext(slaves=store, single=True)
+    slaves = {
+        0x42: ModbusSlaveContext(
+            di=ModbusSequentialDataBlock(0, [0]*10),
+            co=ModbusSequentialDataBlock(0, [0]*10),
+            hr=ModbusSequentialDataBlock(0, [0]*10),
+            ir=ModbusSequentialDataBlock(0, [0]*10)
+        )
+    }
+    context = ModbusServerContext(slaves=slaves, single=False)
 
     identity = ModbusDeviceIdentification()
     identity.VendorName = ''
