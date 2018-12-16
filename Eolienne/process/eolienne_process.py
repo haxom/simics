@@ -10,6 +10,7 @@ modbus_server_ip = '127.0.0.1'
 modbus_server_port = 5002
 GPIO = False
 UNIT=0x42
+speed = 10 # initial wind speed 
 
 # pymodbus
 from pymodbus.client.sync import ModbusTcpClient
@@ -25,11 +26,20 @@ from random import getrandbits as randbits
 
 # GPIO
 if GPIO:
-    import RPi.GPIO as GPIO
+    import RPi.GPIO as IO
+    IO.setwarnings(False)
+GPIO_MANUAL_RED = 16
+GPIO_MANUAL_GREEN = 19
+GPIO_AUTO_RED = 20
+GPIO_AUTO_GREEN = 26
+GPIO_GUST = 6
+GPIO_MOTOR = 13
 
 
 def signal_handler(sig, frame):
     print 'CTRL+C pressed, exiting...'
+    if GPIO:
+        IO.cleanup()        
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -55,12 +65,16 @@ def initdb():
 
 def initGPIO():
     if GPIO:
-        GPIO.setmode(GPIO.BCM)
-        # GPIO 2 to 21 are usable as I/O
-        for i in range(2, 22):
-            GPIO.setup(i, GPIO.OUT)
+        IO.setmode(IO.BCM)
+        IO.setup(GPIO_MANUAL_RED, IO.OUT)
+        IO.setup(GPIO_MANUAL_GREEN, IO.OUT)
+        IO.setup(GPIO_AUTO_RED, IO.OUT)
+        IO.setup(GPIO_AUTO_GREEN, IO.OUT)
+        IO.setup(GPIO_GUST, IO.OUT)
+        IO.setup(GPIO_MOTOR, IO.OUT)
 
 def loop_process():
+    global speed
     # Main Process
     err_count = 0
     coils_count = 20
@@ -114,12 +128,14 @@ def loop_process():
                 print '[stop manually]'
                 registers[1] = 0
                 client.write_registers(0, registers, unit=UNIT)
+                updateGPIO(coils, gust_state)
                 continue
             # wind speed to slow/quick
             if registers[0] < 4 or registers[0] > 25:
                 print '[stop due to the wind speed] (%d m/s)' % registers[0]
                 coils[1] = False
                 client.write_coil(1, False, unit=UNIT)
+                updateGPIO(coils, gust_state)
                 continue
             else:
                 coils[1] = True
@@ -136,7 +152,8 @@ def loop_process():
             client.write_coils(0, coils, unit=UNIT)
             client.write_registers(0, registers, unit=UNIT)
 
-            #updateGPIO(coils, registers)
+            if GPIO:
+                updateGPIO(coils, gust_state)
         except Exception as err:
             print '[error] %s' % err
             err_count += 1
@@ -144,21 +161,31 @@ def loop_process():
                 print '[error] 5 errors happened in the process ! exiting...'
                 sys.exit(1)
 
-def updateGPIO(coils=[], registers=[]):
+def updateGPIO(coils=[], gust_state=0):
     if GPIO:
-        # coils 0 -> 19 aligned with GPIO pins 2 -> 21
-        for i in range(len(coils)):
-            GPIO.output(i+2, coils[i])
-    else:
-        for i in range(len(coils)):
-            # do something with GPIO
-            print 'coils[%d] = %d' % (i, coils[i])
-        print '**********************************************'
-        for i in range(len(registers)):
-            # do something with GPIO
-            print 'registers[%d] = %d' % (i, registers[i])
-        print '**********************************************'
+        # coils[0] => manual START/STOP
+        # coils[1] => auto   START/STOP
+        if gust_state != 0:
+            IO.output(GPIO_GUST, 1)
+        else:
+            IO.output(GPIO_GUST, 0)
+        if coils[0]:
+            IO.output(GPIO_MANUAL_GREEN, 1)
+            IO.output(GPIO_MANUAL_RED, 0)
+        else:
+            IO.output(GPIO_MANUAL_GREEN, 0)
+            IO.output(GPIO_MANUAL_RED, 1)
+        if coils[1]:
+            IO.output(GPIO_AUTO_GREEN, 1)
+            IO.output(GPIO_AUTO_RED, 0)
+        else:
+            IO.output(GPIO_AUTO_GREEN, 0)
+            IO.output(GPIO_AUTO_RED, 1)
 
+        if coils[0] and coils[1]:
+            IO.output(GPIO_MOTOR, 1)
+        else:
+            IO.output(GPIO_MOTOR, 0)
     
 if __name__ == '__main__':
     sleep(10)
