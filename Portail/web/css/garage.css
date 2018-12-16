@@ -1,0 +1,42 @@
+td.code {
+	text-align: right;
+}
+
+td.input {
+	color: green;
+}
+
+td.output {
+	color: red;
+}
+
+td.io {
+	color: blue;
+}
+
+table.door {
+	border: 0px solid green;
+	margin-top:100px;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+div.registers, div.processes {
+	min-width: 200px;
+	max-width: 50%;
+	margin-left: auto;
+	margin-right: auto;
+} 
+
+table.registers, table.processes {
+	border: 1px solid #aaaaaa; 
+	border-collapse: collapse; 
+	margin-left:auto, margin-right:auto;
+	background-color: #efefef;
+}
+
+table.registers td, table.registers th, table.processes td, table.processes th {
+	padding-left: 1ex;
+	padding-right: 1ex;
+}
+
