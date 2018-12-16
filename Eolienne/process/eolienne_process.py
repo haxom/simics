@@ -46,7 +46,7 @@ def initdb():
         # 11 : power production (kW)
         
         client.write_coils(0, [True, True], unit=UNIT)
-        client.write_registers(0, [10, 0], unit=UNIT)
+        client.write_registers(0, [speed, 0], unit=UNIT)
     except Exception as err:
         print '[error] Can\'t init the Modbus coils'
         print '[error] %s' % err
@@ -92,6 +92,7 @@ def loop_process():
 
             # update wind speed
             ## speed = registers[0]
+            global speed
             if randbits(1):
                 speed += 1
             else:
