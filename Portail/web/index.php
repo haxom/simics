@@ -100,8 +100,8 @@
  </tr>
  <tr height="300">
   <td></td>
-  <td valign="top" align="center">
-   <div id='div_gap' style='background-color:green;height=300;border=1' widht='100%'></div>
+  <td valign="top" align="center" style="background-color: black; background-image: url('batmobile.jpg');background-repeat:no-repeat;background-position:center center;">
+   <div id='div_gap' style='background-image: url("portail.jpg");height=300;border=1' widht='100%'></div>
   </td>
   <td align="center"><img height="30" width="30" src='m_up.gif' id='img_m_up' alt='M_UP' style='display:none'><br /><img height="30" width="30" src='m_down.gif' id='img_m_down' alt='M_DOWN' style='display:none'></td>
  </tr>
