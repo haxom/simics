@@ -61,7 +61,7 @@ def initGPIO():
             GPIO.setup(i, GPIO.OUT)
 
 def loop_process():
-    # Main Process (template = flip-flop)
+    # Main Process
     err_count = 0
     coils_count = 20
     gust_state = 0 # 0 = no / 1 = begin / 2 = in progress / 3 = last
