@@ -18,7 +18,7 @@ import sys
 import signal
 
 # Params
-listen_int = '0.0.0.0'
+listen_int = '127.0.0.1'
 listen_port = 5002
 UNIT=0x42
 

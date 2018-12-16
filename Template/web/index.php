@@ -6,7 +6,7 @@
 
 	// import PhpModbus
 	require_once './phpmodbus/ModbusMaster.php';
-	$modbus = new ModbusMaster("172.17.0.1", "TCP");
+	$modbus = new ModbusMaster("127.0.0.1", "TCP");
 	$modbus->port = "5002";
 	$modbus->client_port = "5002";
 	$unitId = 66; // 0x42
