@@ -40,12 +40,12 @@ def init():
     context = ModbusServerContext(slaves=slaves, single=False)
 
     identity = ModbusDeviceIdentification()
-    identity.VendorName = ''
-    identity.ProductCode = ''
-    identity.VendorUrl = ''
-    identity.ProductName = ''
-    identity.ModelName = ''
-    identity.MajorMinorRevision = ''
+    identity.VendorName = 'HAXOM'
+    identity.ProductCode = 'SIMU-ICS-EOLIENNE'
+    identity.VendorUrl = 'https://github.com/haxom/'
+    identity.ProductName = 'SIMU-ICS'
+    identity.ModelName = 'EOLIENNE'
+    identity.MajorMinorRevision = '1.0.0'
 
     print 'Launching Modbus server, listening on %s:%d' % (listen_int, listen_port)
     StartTcpServer(context, identity=identity, address=(listen_int, listen_port))
