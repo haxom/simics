@@ -25,9 +25,13 @@ $ pip install RPi.GPIO --user
 already included in the projects
 ```
 
-## Projets
+## Done
 
- * [in progress] Processus d'un portail électrique
- * [in progress] Système simplifié d'un centrale nucléaire
- * [in progress] Processus d'une éolienne
+ * Processus d'un portail électrique
+ * Processus d'une éolienne
+
+## Ongoing / Todo
+
+ * Simulation d'une usine pour les éoliennes (supervision d'un ensemble d'éoliennes, actions sur un groupe, etc.)
+ * Système simplifié d'une centrale nucléaire
 
