@@ -135,6 +135,8 @@ def loop_process():
                 print '[stop due to the wind speed] (%d m/s)' % registers[0]
                 coils[1] = False
                 client.write_coil(1, False, unit=UNIT)
+                registers[1] = 0
+                client.write_registers(0, registers, unit=UNIT)
                 updateGPIO(coils, gust_state)
                 continue
             else:
