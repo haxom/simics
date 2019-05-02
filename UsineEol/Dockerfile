@@ -7,4 +7,4 @@ RUN git clone https://github.com/haxom/simics && cp -r /root/simics/UsineEol/web
 
 EXPOSE 80/tcp
 
-CMD service apache2 restart && tail -f /dev/null
+CMD echo $EOL_IP > /tmp/eoliennes.txt && service apache2 restart && tail -f /dev/null
