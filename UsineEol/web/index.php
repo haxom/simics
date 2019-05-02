@@ -8,7 +8,7 @@
 	require_once './phpmodbus/ModbusMaster.php';
 
 	// import IP list of Eoliennes
-	$eoliennes = explode(';', file_get_contents('/tmp/usineeol/eoliennes.txt'));
+	$eoliennes = explode(';', $_ENV['EOL_IP']));
 	$md = Array();
 	$id = 0;
 	foreach($eoliennes as $eolienne)
