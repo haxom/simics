@@ -42,7 +42,7 @@
 	<script>
 		var coils = new Array();
 		var registers = new Array();
-		var broken = False;
+		var broken = false;
 
 		function updateCoils()
 		{
