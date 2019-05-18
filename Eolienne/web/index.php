@@ -123,7 +123,7 @@
 					var results = JSON.parse(this.responseText);
 					coils = results['coils'];
 					registers = results['registers'];
-					broken = results['broken']
+					broken = results['broken'][0]
 					updateCoils();
 					updateRegisters();
 					updateBroken();
