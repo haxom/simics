@@ -20,6 +20,7 @@
 			case "readAll":
 				$output = Array();
 				$output['coils'] = $modbus->readCoils($unitId, 0, 2);
+				$output['broken'] = $modbus->readCoils($unitId, 25, 1);
 				$registers = array_chunk($modbus->readMultipleRegisters($unitId, 0, 2), 2);
 				foreach($registers as $key => $value)
 					$output['registers'][$key] = PhpType::bytes2unsignedInt($value);
@@ -41,6 +42,7 @@
 	<script>
 		var coils = new Array();
 		var registers = new Array();
+		var broken = False;
 
 		function updateCoils()
 		{
@@ -70,6 +72,15 @@
 		{
 			document.getElementById('input_wind_speed').value = registers[0] + " m/s";
 			document.getElementById('input_power_production').value = registers[1] + " kW";
+		}
+
+		function updateBroken()
+		{
+			if(broken)
+				document.getElementById('img_eolienne').src = "eolienne_broken.png";
+			else
+				document.getElementById('img_eolienne').src = "eolienne.png";
+			
 		}
 
 		function manualStop()
@@ -112,8 +123,10 @@
 					var results = JSON.parse(this.responseText);
 					coils = results['coils'];
 					registers = results['registers'];
+					broken = results['broken']
 					updateCoils();
 					updateRegisters();
+					updateBroken();
 				}
 			}
 			xhr.open('GET', 'index.php?act=readAll', true);
@@ -143,7 +156,7 @@
 Wind speed <input style="text-align: center;" id="input_wind_speed" value="0 m/s" readonly>
 </td>
 <td width="80%" style="border: 1px solid black;">
-<center><img src="eolienne.png"></center>
+<center><img id="img_eolienne" src="eolienne.png"></center>
 </td>
 <td width="5%" style="border: 1px solid black; text-align: center" valign="bottom">
 Power production (instant) <input style="text-align: center;" id="input_power_production" value="0 kW" readonly>

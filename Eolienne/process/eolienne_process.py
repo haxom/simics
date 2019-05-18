@@ -169,7 +169,7 @@ def loop_process():
                 print '[wind breaks the eolienne]'
                 client.write_coil(25, True, unit=UNIT)
                 registers[1] = 0
-                client.write_regiser(0, registers, unit=UNIT)
+                client.write_registers(0, registers, unit=UNIT)
                 continue
 
             # otherwise, running
