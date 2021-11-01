@@ -40,7 +40,7 @@ from random import getrandbits as randbits
 
 
 def signal_handler(sig, frame):
-    print 'CTRL+C pressed, exiting...'
+    print('CTRL+C pressed, exiting...')
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -57,9 +57,9 @@ def initdb():
         client.write_register(7, LIGHT1, unit=UNIT)
         client.write_register(8, LIGHT2, unit=UNIT)
     except Exception as err:
-        print '[error] Can\'t init the Modbus coils'
-        print '[error] %s' % err
-        print '[error] exiting...'
+        print('[error] Can\'t init the Modbus coils')
+        print('[error] %s' % err)
+        print('[error] exiting...')
         sys.exit(1)
 
 def loop_process():
@@ -109,10 +109,10 @@ def loop_process():
             client.write_register(7, LIGHT1, unit=UNIT)
             client.write_register(8, LIGHT2, unit=UNIT)
         except Exception as err:
-            print '[error] %s' % err
+            print('[error] %s' % err)
             err_count += 1
             if err_count == 5:
-                print '[error] 5 errors happened in the process ! exiting...'
+                print('[error] 5 errors happened in the process ! exiting...')
                 sys.exit(1)
 
 if __name__ == '__main__':
