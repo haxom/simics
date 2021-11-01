@@ -9,4 +9,4 @@ RUN git clone https://github.com/haxom/simics && cp -r /root/simics/Eolienne/web
 EXPOSE 80/tcp
 EXPOSE 502/tcp
 
-CMD service apache2 restart && python /root/simics/Eolienne/process/eolienne_server.py &> /dev/null & python /root/simics/Eolienne/process/eolienne_process.py &> /dev/null & tail -f /dev/null
+CMD service apache2 restart && python3 /root/simics/Eolienne/process/eolienne_server.py &> /dev/null & python3 /root/simics/Eolienne/process/eolienne_process.py &> /dev/null & tail -f /dev/null
