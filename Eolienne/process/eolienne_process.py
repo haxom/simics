@@ -37,7 +37,7 @@ GPIO_MOTOR = 13
 
 
 def signal_handler(sig, frame):
-    print 'CTRL+C pressed, exiting...'
+    print('CTRL+C pressed, exiting...')
     if GPIO:
         IO.cleanup()        
     sys.exit(0)
@@ -64,9 +64,9 @@ def initdb():
         client.write_registers(0, [speed, 0], unit=UNIT)
         client.write_registers(10, [4, 25], unit=UNIT)
     except Exception as err:
-        print '[error] Can\'t init the Modbus coils'
-        print '[error] %s' % err
-        print '[error] exiting...'
+        print('[error] Can\'t init the Modbus coils')
+        print('[error] %s' % err)
+        print('[error] exiting...')
         sys.exit(1)
 
 def initGPIO():
@@ -121,10 +121,10 @@ def loop_process():
             else:
                 speed -= 1
             if gust_state == 1:
-                print '**new gust**'
+                print('**new gust**')
                 speed += 10
             if gust_state == 3:
-                print '**eo gust**'
+                print('**eo gust**')
                 speed -= 10
             if speed < 0:
                 speed = 0
@@ -134,21 +134,21 @@ def loop_process():
 
             # broken
             if broken:
-                print '[broken eolienne]'
+                print('[broken eolienne]')
                 registers[1] = 0
                 client.write_registers(0, registers, unit=UNIT)
                 updateGPIO(coils, gust_state)
                 continue
             # manual stop
             if not coils[0]:
-                print '[stop manually]'
+                print('[stop manually]')
                 registers[1] = 0
                 client.write_registers(0, registers, unit=UNIT)
                 updateGPIO(coils, gust_state)
                 continue
             # wind speed to slow/quick
             if speed < speed_min or speed > speed_max:
-                print '[stop due to the wind speed] (%d m/s)' % registers[0]
+                print('[stop due to the wind speed] (%d m/s)' % registers[0])
                 coils[1] = False
                 client.write_coil(1, False, unit=UNIT)
                 registers[1] = 0
@@ -166,7 +166,7 @@ def loop_process():
             # unwanted case : Wind speed > 25 m/s will break the eolienne
             if speed > 25:
                 broken = True
-                print '[wind breaks the eolienne]'
+                print('[wind breaks the eolienne]')
                 client.write_coil(25, True, unit=UNIT)
                 registers[1] = 0
                 client.write_registers(0, registers, unit=UNIT)
@@ -184,7 +184,7 @@ def loop_process():
                 power = int(power*(1-powerloss/100))
             registers[1] = power
 
-            #print 'producting %d kW (%d m/s)' % (registers[1], registers[0])
+            #print('producting %d kW (%d m/s)' % (registers[1], registers[0]))
 
             client.write_coils(0, coils, unit=UNIT)
             client.write_registers(0, registers, unit=UNIT)
@@ -192,10 +192,10 @@ def loop_process():
             if GPIO:
                 updateGPIO(coils, gust_state)
         except Exception as err:
-            print '[error] %s' % err
+            print('[error] %s' % err)
             err_count += 1
             if err_count == 5:
-                print '[error] 5 errors happened in the process ! exiting...'
+                print('[error] 5 errors happened in the process ! exiting...')
                 sys.exit(1)
 
 def updateGPIO(coils=[], gust_state=0):

@@ -23,7 +23,7 @@ listen_port = 502
 UNIT=0x42
 
 def signal_handler(sig, frame):
-    print 'CTRL+C pressed, exiting...'
+    print('CTRL+C pressed, exiting...')
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -47,14 +47,14 @@ def init():
     identity.ModelName = 'EOLIENNE'
     identity.MajorMinorRevision = '1.0.0'
 
-    print 'Launching Modbus server, listening on %s:%d' % (listen_int, listen_port)
+    print('Launching Modbus server, listening on %s:%d' % (listen_int, listen_port))
     StartTcpServer(context, identity=identity, address=(listen_int, listen_port))
 
 if __name__ == '__main__':
     try:
         init()
     except Exception as err:
-        print '[error] Can\'t init Modbus server ...'
-        print '[error] %s' % err
-        print '[error] exiting...'
+        print('[error] Can\'t init Modbus server ...')
+        print('[error] %s' % err)
+        print('[error] exiting...')
         sys.exit(1)
