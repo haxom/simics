@@ -184,7 +184,7 @@ def loop_process():
                 power = int(power*(1-powerloss/100))
             registers[1] = power
 
-            print 'producting %d kW (%d m/s)' % (registers[1], registers[0])
+            #print 'producting %d kW (%d m/s)' % (registers[1], registers[0])
 
             client.write_coils(0, coils, unit=UNIT)
             client.write_registers(0, registers, unit=UNIT)
