@@ -19,7 +19,7 @@ import signal
 
 # Params
 listen_int = '127.0.0.1'
-listen_port = 5002
+listen_port = 502
 UNIT=0x42
 
 def signal_handler(sig, frame):
