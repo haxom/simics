@@ -10,7 +10,7 @@ modbus_server_ip = '127.0.0.1'
 modbus_server_port = 502
 GPIO = False
 UNIT=0x42
-speed = 10 # initial wind speed 
+speed = 10 # initial wind speed
 
 # pymodbus
 from pymodbus.client.sync import ModbusTcpClient
