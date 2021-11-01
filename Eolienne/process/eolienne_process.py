@@ -181,8 +181,8 @@ def loop_process():
 
             power = (0.29 * pow(24, 2) * pow(registers[0], 3))/1000
             if powerloss != 0:
-                power = int(power*(1-powerloss/100))
-            registers[1] = power
+                power = power*(1-powerloss/100)
+            registers[1] = int(power)
 
             #print('producting %d kW (%d m/s)' % (registers[1], registers[0]))
 
