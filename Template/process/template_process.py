@@ -7,7 +7,7 @@ __version__     = '1.0'
 
 # Options
 modbus_server_ip = '127.0.0.1'
-modbus_server_port = 5002
+modbus_server_port = 502
 GPIO = False
 UNIT = 0x42
 
