@@ -1,17 +1,24 @@
 #!/usr/bin/env python
-#coding=utf8
-__author__      = 'haxom'
-__email__       = 'haxom@haxom.net'
-__file__        = 'portail_process.py'
-__version__     = '1.0'
+# coding=utf8
+__author__ = 'haxom'
+__email__ = 'haxom@haxom.net'
+__file__ = 'portail_process.py'
+__version__ = '1.0'
+
+import signal
+# System
+import sys
+from time import sleep
+
+# pymodbus
+from pymodbus.client.sync import ModbusTcpClient
 
 # Options
 modbus_server_ip = '127.0.0.1'
 modbus_server_port = 502
-GPIO = False
 UNIT = 0x2d
 
-## List of VAR
+# List of VAR
 CAPT1 = 0
 CAPT2 = 0
 M_UP = 0
@@ -21,28 +28,16 @@ C_DOWN = 0
 C_STOP = 0
 LIGHT1 = 0
 LIGHT2 = 0
-## End of List of VAR
-
-# pymodbus
-from pymodbus.client.sync import ModbusTcpClient
-
-# System
-import sys
-import signal
-from time import sleep
-
-# GPIO
-if GPIO:
-    import RPi.GPIO as GPIO
-
-# Only use to init Modbus coils with random values
-from random import getrandbits as randbits
+# End of List of VAR
 
 
 def signal_handler(sig, frame):
     print('CTRL+C pressed, exiting...')
     sys.exit(0)
+
+
 signal.signal(signal.SIGINT, signal_handler)
+
 
 def initdb():
     try:
@@ -62,11 +57,10 @@ def initdb():
         print('[error] exiting...')
         sys.exit(1)
 
+
 def loop_process():
     # Main Process
     err_count = 0
-    registre_count = 10
-
 
     while True:
         sleep(1)
@@ -87,7 +81,6 @@ def loop_process():
             # process
             LIGHT1 = CAPT1
             LIGHT2 = CAPT2
-            # Moteur up = 
             M_UP = (not M_DOWN) and (not CAPT1) and (not C_STOP) and (C_UP or M_UP)
             M_DOWN = (not M_UP) and (CAPT2) and (not C_STOP) and (C_DOWN or M_DOWN)
 
@@ -114,6 +107,7 @@ def loop_process():
             if err_count == 5:
                 print('[error] 5 errors happened in the process ! exiting...')
                 sys.exit(1)
+
 
 if __name__ == '__main__':
     sleep(10)

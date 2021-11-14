@@ -1,30 +1,31 @@
 #!/usr/bin/env python
-#coding=utf8
-__author__      = 'haxom'
-__email__       = 'haxom@haxom.net'
-__file__        = 'portail_server.py'
-__version__     = '1.0'
+# coding=utf8
+__author__ = 'haxom'
+__email__ = 'haxom@haxom.net'
+__file__ = 'portail_server.py'
+__version__ = '1.1'
 
-# pymodbus
-from pymodbus.server.sync import StartTcpServer
-from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.datastore import ModbusSequentialDataBlock
-from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-
-from pymodbus.client.sync import ModbusTcpClient
-
+import signal
 # System
 import sys
-import signal
+
+from pymodbus.datastore import (ModbusSequentialDataBlock, ModbusServerContext,
+                                ModbusSlaveContext)
+from pymodbus.device import ModbusDeviceIdentification
+# pymodbus
+from pymodbus.server.sync import StartTcpServer
 
 # Params
 listen_int = '0.0.0.0'
 listen_port = 502
-UNIT=0x2d
+UNIT = 0x2d
+
 
 def signal_handler(sig, frame):
     print('CTRL+C pressed, exiting...')
     sys.exit(0)
+
+
 signal.signal(signal.SIGINT, signal_handler)
 
 
@@ -47,8 +48,13 @@ def init():
     identity.ModelName = 'PORTAIL'
     identity.MajorMinorRevision = '1.0.0'
 
-    print('Launching Modbus server, listening on %s:%d' % (listen_int, listen_port))
-    StartTcpServer(context, identity=identity, address=(listen_int, listen_port))
+    print(f'Modbus slave launched on {listen_int}:{listen_port}')
+    StartTcpServer(
+        context,
+        identity=identity,
+        address=(listen_int, listen_port)
+    )
+
 
 if __name__ == '__main__':
     try:
