@@ -1,7 +1,7 @@
 <?php
 	/*
 	@author haxom <haxom@haxom.net>
-	@version 0.1
+	@version 1.1
 	*/
 
 	// import PhpModbus
@@ -38,7 +38,7 @@
 ?>
 <html>
 <head>
-	<title>EolienneMonitor</title>
+	<title>TURBOELEC - Supervision Eolienne</title>
 	<script>
 		var coils = new Array();
 		var registers = new Array();
@@ -137,7 +137,7 @@
 	</script>
 </head>
 <body>
-<center><h1>EolienneMonitor</h1></center>
+<center><h1>TURBOELEC - Supervision Eolienne</h1></center>
 <center>
 <table style="border-collapse: collapse;" width="80%">
 <tr>

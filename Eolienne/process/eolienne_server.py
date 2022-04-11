@@ -40,9 +40,9 @@ def init():
 
     identity = ModbusDeviceIdentification()
     identity.VendorName = 'HAXOM'
-    identity.ProductCode = 'SIMU-ICS-EOLIENNE'
-    identity.VendorUrl = 'https://github.com/haxom/'
-    identity.ProductName = 'SIMU-ICS'
+    identity.ProductCode = 'SIMU-TURBOELEC'
+    identity.VendorUrl = 'https://github.com/haxom/simics/'
+    identity.ProductName = 'SIMU-TURBOELEC-EOLIENNE'
     identity.ModelName = 'EOLIENNE'
     identity.MajorMinorRevision = '1.0.0'
 

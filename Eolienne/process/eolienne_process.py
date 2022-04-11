@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'eolienne_process.py'
-__version__ = '1.0'
+__version__ = '1.1'
 
 import signal
 # System
@@ -149,11 +149,11 @@ def loop_process():
             # otherwise, running
             # [production] P = 0.29 * D^2 * v^3
             #   P = power (W)
-            #   D = rotor diameter = 24m
+            #   D = rotor diameter = 23m
             #   v = wind speed (m/s)
             coils[1] = True
 
-            power = (0.29 * pow(24, 2) * pow(registers[0], 3))/1000
+            power = (0.29 * pow(23, 2) * pow(registers[0], 3))/1000
             if powerloss != 0:
                 power = power*(1-powerloss/100)
             registers[1] = int(power)
