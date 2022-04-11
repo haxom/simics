@@ -29,9 +29,9 @@ already included in the projects
 
  * Processus d'un portail électrique
  * Processus d'une éolienne
+ * Supervision d'un parc éolien
 
 ## Ongoing / Todo
 
- * Simulation d'une usine pour les éoliennes (supervision d'un ensemble d'éoliennes, actions sur un groupe, etc.)
  * Système simplifié d'une centrale nucléaire
 

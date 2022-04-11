@@ -1,7 +1,7 @@
 <?php
 	/*
 	@author haxom <haxom@haxom.net>
-	@version 0.1
+	@version 1.1
 	*/
 
 	// import PhpModbus
@@ -63,7 +63,7 @@
 ?>
 <html>
 <head>
-	<title>UsineEol</title>
+	<title>TURBOElec - Supervision</title>
 	<script>
 		var eoliennes = new Array();
 		var production = 0;
@@ -147,7 +147,7 @@
 			for(i=table.rows.length-1;i>eoliennes.length;i--)
 				table.deleteRow(i);
 
-			document.getElementById('global_stat').innerHTML = "Production globale (instant) : <b>"+production+" kW</b> | Éoliennes actives : "+eol_up+" / "+eoliennes.length;
+			document.getElementById('global_stat').innerHTML = "Production globale : <b>"+production+" kW</b> | Éoliennes actives : "+eol_up+" / "+eoliennes.length;
 		}
 
 		function manualStop(id)
@@ -193,7 +193,7 @@
 	</script>
 </head>
 <body>
-<center><h1>UsineEol</h1></center>
+<center><h1>TURBOElec - Supervision du parc</h1></center>
 <center><div id="global_stat"></div>
 </center>
 <center>
