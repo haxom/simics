@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export NB_EOL=5
+export NB_EOL=2
 
 # Stop Supervisor
 echo "Arrêt de la supervision en cours..."
