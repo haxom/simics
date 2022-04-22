@@ -29,7 +29,6 @@ already included in the projects
 
  * Processus d'un portail électrique
  * Processus d'une éolienne
- * Supervision d'un parc éolien
 
 ## Ongoing / Todo
 
