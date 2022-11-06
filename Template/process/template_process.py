@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'template_process.py'
-__version__ = '1.0'
+__version__ = '1.2'
 
 import signal
 # System
@@ -13,7 +13,7 @@ from random import getrandbits as randbits
 from time import sleep
 
 # pymodbus
-from pymodbus.client.sync import ModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 
 # Options
 modbus_server_ip = '127.0.0.1'

@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'template_server.py'
-__version__ = '1.1'
+__version__ = '1.2'
 
 import signal
 # System
