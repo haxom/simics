@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'portail_server.py'
-__version__ = '1.1'
+__version__ = '1.2'
 
 import signal
 # System
@@ -13,7 +13,7 @@ from pymodbus.datastore import (ModbusSequentialDataBlock, ModbusServerContext,
                                 ModbusSlaveContext)
 from pymodbus.device import ModbusDeviceIdentification
 # pymodbus
-from pymodbus.server.sync import StartTcpServer
+from pymodbus.server import StartTcpServer
 
 # Params
 listen_int = '0.0.0.0'
@@ -50,7 +50,7 @@ def init():
 
     print(f'Modbus slave launched on {listen_int}:{listen_port}')
     StartTcpServer(
-        context,
+        context=context,
         identity=identity,
         address=(listen_int, listen_port)
     )
