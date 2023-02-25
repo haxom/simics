@@ -47,10 +47,10 @@ def initdb():
         # 10 : wind min speed (4m/s)
         # 11 : wind max (25 m/s)
 
-        client.write_coils(0, [True, True], unit=UNIT)
-        client.write_coils(25, [False], unit=UNIT)
-        client.write_registers(0, [speed, 0], unit=UNIT)
-        client.write_registers(10, [4, 25], unit=UNIT)
+        client.write_coils(0, [True, True], slave=UNIT)
+        client.write_coils(25, [False], slave=UNIT)
+        client.write_registers(0, [speed, 0], slave=UNIT)
+        client.write_registers(10, [4, 25], slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
         print('[error] %s' % err)
@@ -83,13 +83,13 @@ def loop_process():
         try:
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
 
-            coils = client.read_coils(0, count=2, unit=UNIT).bits
+            coils = client.read_coils(0, count=2, slave=UNIT).bits
             coils = coils[:2]
-            registers = client.read_holding_registers(0, count=2, unit=UNIT).registers
+            registers = client.read_holding_registers(0, count=2, slave=UNIT).registers
             registers = registers[:2]
 
-            speed_min, speed_max = client.read_holding_registers(10, 2, unit=UNIT).registers
-            broken = client.read_coils(25, count=1, unit=UNIT).bits[0]
+            speed_min, speed_max = client.read_holding_registers(10, 2, slave=UNIT).registers
+            broken = client.read_coils(25, count=1, slave=UNIT).bits[0]
 
             # update wind speed
             global speed
@@ -113,21 +113,21 @@ def loop_process():
             if broken:
                 print('[broken eolienne]')
                 registers[1] = 0
-                client.write_registers(0, registers, unit=UNIT)
+                client.write_registers(0, registers, slave=UNIT)
                 continue
             # manual stop
             if not coils[0]:
                 print('[stop manually]')
                 registers[1] = 0
-                client.write_registers(0, registers, unit=UNIT)
+                client.write_registers(0, registers, slave=UNIT)
                 continue
             # wind speed to slow/quick
             if speed < speed_min or speed > speed_max:
                 print('[stop due to the wind speed] (%d m/s)' % registers[0])
                 coils[1] = False
-                client.write_coil(1, False, unit=UNIT)
+                client.write_coil(1, False, slave=UNIT)
                 registers[1] = 0
-                client.write_registers(0, registers, unit=UNIT)
+                client.write_registers(0, registers, slave=UNIT)
                 continue
 
             powerloss = 0  # 0 % of lost
@@ -141,9 +141,9 @@ def loop_process():
             if speed > 25:
                 broken = True
                 print('[wind breaks the eolienne]')
-                client.write_coil(25, True, unit=UNIT)
+                client.write_coil(25, True, slave=UNIT)
                 registers[1] = 0
-                client.write_registers(0, registers, unit=UNIT)
+                client.write_registers(0, registers, slave=UNIT)
                 continue
 
             # otherwise, running
@@ -158,8 +158,8 @@ def loop_process():
                 power = power*(1-powerloss/100)
             registers[1] = int(power)
 
-            client.write_coils(0, coils, unit=UNIT)
-            client.write_registers(0, registers, unit=UNIT)
+            client.write_coils(0, coils, slave=UNIT)
+            client.write_registers(0, registers, slave=UNIT)
 
         except Exception as err:
             print(f'[ERROR] {err}')

@@ -42,15 +42,15 @@ signal.signal(signal.SIGINT, signal_handler)
 def initdb():
     try:
         client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
-        client.write_register(0, CAPT1, unit=UNIT)
-        client.write_register(1, CAPT2, unit=UNIT)
-        client.write_register(2, M_UP, unit=UNIT)
-        client.write_register(3, M_DOWN, unit=UNIT)
-        client.write_register(4, C_UP, unit=UNIT)
-        client.write_register(5, C_DOWN, unit=UNIT)
-        client.write_register(6, C_STOP, unit=UNIT)
-        client.write_register(7, LIGHT1, unit=UNIT)
-        client.write_register(8, LIGHT2, unit=UNIT)
+        client.write_register(0, CAPT1, slave=UNIT)
+        client.write_register(1, CAPT2, slave=UNIT)
+        client.write_register(2, M_UP, slave=UNIT)
+        client.write_register(3, M_DOWN, slave=UNIT)
+        client.write_register(4, C_UP, slave=UNIT)
+        client.write_register(5, C_DOWN, slave=UNIT)
+        client.write_register(6, C_STOP, slave=UNIT)
+        client.write_register(7, LIGHT1, slave=UNIT)
+        client.write_register(8, LIGHT2, slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
         print('[error] %s' % err)
@@ -68,15 +68,15 @@ def loop_process():
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
 
             # read registers
-            CAPT1 = client.read_holding_registers(0, 1, unit=UNIT).registers[0]
-            CAPT2 = client.read_holding_registers(1, 1, unit=UNIT).registers[0]
-            M_UP = client.read_holding_registers(2, 1, unit=UNIT).registers[0]
-            M_DOWN = client.read_holding_registers(3, 1, unit=UNIT).registers[0]
-            C_UP = client.read_holding_registers(4, 1, unit=UNIT).registers[0]
-            C_DOWN = client.read_holding_registers(5, 1, unit=UNIT).registers[0]
-            C_STOP = client.read_holding_registers(6, 1, unit=UNIT).registers[0]
-            LIGHT1 = client.read_holding_registers(7, 1, unit=UNIT).registers[0]
-            LIGHT2 = client.read_holding_registers(8, 1, unit=UNIT).registers[0]
+            CAPT1 = client.read_holding_registers(0, 1, slave=UNIT).registers[0]
+            CAPT2 = client.read_holding_registers(1, 1, slave=UNIT).registers[0]
+            M_UP = client.read_holding_registers(2, 1, slave=UNIT).registers[0]
+            M_DOWN = client.read_holding_registers(3, 1, slave=UNIT).registers[0]
+            C_UP = client.read_holding_registers(4, 1, slave=UNIT).registers[0]
+            C_DOWN = client.read_holding_registers(5, 1, slave=UNIT).registers[0]
+            C_STOP = client.read_holding_registers(6, 1, slave=UNIT).registers[0]
+            LIGHT1 = client.read_holding_registers(7, 1, slave=UNIT).registers[0]
+            LIGHT2 = client.read_holding_registers(8, 1, slave=UNIT).registers[0]
 
             # process
             LIGHT1 = CAPT1
@@ -92,15 +92,15 @@ def loop_process():
             # CAPT1 & CAPT2 are updated by the PHP script itself
 
             # save registers
-            client.write_register(0, CAPT1, unit=UNIT)
-            client.write_register(1, CAPT2, unit=UNIT)
-            client.write_register(2, M_UP, unit=UNIT)
-            client.write_register(3, M_DOWN, unit=UNIT)
-            client.write_register(4, C_UP, unit=UNIT)
-            client.write_register(5, C_DOWN, unit=UNIT)
-            client.write_register(6, C_STOP, unit=UNIT)
-            client.write_register(7, LIGHT1, unit=UNIT)
-            client.write_register(8, LIGHT2, unit=UNIT)
+            client.write_register(0, CAPT1, slave=UNIT)
+            client.write_register(1, CAPT2, slave=UNIT)
+            client.write_register(2, M_UP, slave=UNIT)
+            client.write_register(3, M_DOWN, slave=UNIT)
+            client.write_register(4, C_UP, slave=UNIT)
+            client.write_register(5, C_DOWN, slave=UNIT)
+            client.write_register(6, C_STOP, slave=UNIT)
+            client.write_register(7, LIGHT1, slave=UNIT)
+            client.write_register(8, LIGHT2, slave=UNIT)
         except Exception as err:
             print('[error] %s' % err)
             err_count += 1

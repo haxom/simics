@@ -33,8 +33,8 @@ def initdb():
     try:
         client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
         for registre in range(0, 10):
-            client.write_coil(registre, bool(randbits(1)), unit=UNIT)
-            client.write_register(registre, bool(randbits(1)), unit=UNIT)
+            client.write_coil(registre, bool(randbits(1)), slave=UNIT)
+            client.write_register(registre, bool(randbits(1)), slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
         print('[error] %s' % err)
@@ -52,7 +52,7 @@ def loop_process():
         try:
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
 
-            coils = client.read_coils(0, count=registre_count, unit=UNIT)
+            coils = client.read_coils(0, count=registre_count, slave=UNIT)
             coils = coils.bits[:registre_count]
             # flipping booleans from list coils
             coils = [not i for i in coils]
@@ -61,11 +61,11 @@ def loop_process():
             registers = client.read_holding_registers(
                 0,
                 count=registre_count,
-                unit=UNIT
+                slave=UNIT
             )
             registers = registers.registers[:registre_count]
             registers = [i+1 for i in registers]
-            client.write_registers(0, registers, unit=UNIT)
+            client.write_registers(0, registers, slave=UNIT)
 
             updateGPIO(coils, registers)
         except Exception as err:
