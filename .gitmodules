@@ -4,3 +4,6 @@
 [submodule "Portail/web/phpmodbus"]
 	path = Portail/web/phpmodbus
 	url = https://github.com/krakorj/phpmodbus.git
+[submodule "Template/web/phpmodbus"]
+	path = Template/web/phpmodbus
+	url = https://github.com/krakorj/phpmodbus.git

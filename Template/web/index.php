@@ -5,7 +5,7 @@
 	*/
 
 	// import PhpModbus
-	require_once './phpmodbus/ModbusMaster.php';
+	require_once './phpmodbus/Phpmodbus/ModbusMaster.php';
 	$modbus = new ModbusMaster("127.0.0.1", "TCP");
 	$modbus->port = "502";
 	$modbus->client_port = "502";
