@@ -16,17 +16,6 @@ $ cd simics
 $ git submodule update --init
 ```
 
-## Dépendances
- * [pymodbys](https://github.com/riptideio/pymodbus)
-```
-$ pip install pymodbus --user
-```
-
- * [PhpModbus](https://github.com/krakorj/phpmodbus/) : required for web HMI
-```
-already included in the projects
-```
-
 ## Done
 
  * Processus d'un portail électrique
