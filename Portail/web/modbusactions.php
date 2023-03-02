@@ -14,7 +14,7 @@
 	$LIGHT2 = 0;
 	$GAP = 0;
 
-	require_once 'phpmodbus/ModbusMaster.php';
+	require_once 'phpmodbus/Phpmodbus/ModbusMaster.php';
 	$modbus = new ModbusMaster('127.0.0.1', 'TCP');
 	
 	// read registers

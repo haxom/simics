@@ -1,3 +1,6 @@
 [submodule "Eolienne/web/phpmodbus"]
 	path = Eolienne/web/phpmodbus
 	url = https://github.com/krakorj/phpmodbus.git
+[submodule "Portail/web/phpmodbus"]
+	path = Portail/web/phpmodbus
+	url = https://github.com/krakorj/phpmodbus.git
