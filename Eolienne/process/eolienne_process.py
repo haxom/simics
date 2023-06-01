@@ -8,9 +8,6 @@ __version__ = '1.2'
 import signal
 # System
 import sys
-# random to simulate wind speed
-from random import getrandbits as randbits
-from random import randint
 from time import sleep
 
 # pymodbus
@@ -20,7 +17,7 @@ from pymodbus.client import ModbusTcpClient
 modbus_server_ip = '127.0.0.1'
 modbus_server_port = 502
 UNIT = 0x42
-speed = 10  # initial wind speed
+WIND_SPEED_FILE = '/tmp/wind.txt'
 
 
 def signal_handler(sig, frame):
@@ -49,7 +46,7 @@ def initdb():
 
         client.write_coils(0, [True, True], slave=UNIT)
         client.write_coils(25, [False], slave=UNIT)
-        client.write_registers(0, [speed, 0], slave=UNIT)
+        client.write_registers(0, [0, 0], slave=UNIT)
         client.write_registers(10, [4, 25], slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
@@ -59,26 +56,10 @@ def initdb():
 
 
 def loop_process():
-    global speed
     # Main Process
     err_count = 0
-    gust_state = 0  # 0 = no / 1 = begin / 2 = in progress / 3 = last
-    gust_cmp = 0
-
     while True:
         sleep(1)
-        # try gust
-        if gust_state == 3:
-            gust_state = 0
-        if gust_state == 1 or gust_state == 2:
-            gust_state = 2
-            gust_cmp -= 1
-            if gust_cmp == 0:
-                gust_state = 3
-
-        if randint(0, 20) == 10 and gust_state == 0:
-            gust_state = 1
-            gust_cmp += 5
 
         try:
             client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
@@ -91,22 +72,7 @@ def loop_process():
             speed_min, speed_max = client.read_holding_registers(10, 2, slave=UNIT).registers
             broken = client.read_coils(25, count=1, slave=UNIT).bits[0]
 
-            # update wind speed
-            global speed
-            if randbits(1):
-                speed += 1
-            else:
-                speed -= 1
-            if gust_state == 1:
-                print('**new gust**')
-                speed += 10
-            if gust_state == 3:
-                print('**eo gust**')
-                speed -= 10
-            if speed < 0:
-                speed = 0
-            if speed > 30:
-                speed = 30
+            speed = int(open(WIND_SPEED_FILE, 'r').read())
             registers[0] = speed
 
             # broken

@@ -10,4 +10,4 @@ RUN cp -r /data/web/* /var/www/html && chown -R www-data:www-data /var/www/html/
 EXPOSE 80/tcp
 EXPOSE 502/tcp
 
-CMD service apache2 restart && python3 /data/process/eolienne_server.py &> /dev/null & python3 /data/process/eolienne_process.py &> /dev/null & tail -f /dev/null
+CMD service apache2 restart && python3 /data/process/wind.py &> /dev/null & python3 /data/process/eolienne_server.py &> /dev/null & python3 /data/process/eolienne_process.py &> /dev/null & tail -f /dev/null
