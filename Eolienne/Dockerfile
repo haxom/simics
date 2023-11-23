@@ -7,6 +7,8 @@ COPY . /data
 WORKDIR /data
 RUN cp -r /data/web/* /var/www/html && chown -R www-data:www-data /var/www/html/ && rm /var/www/html/index.html
 
+RUN echo SetEnv OPERATOR_PWD operator >> /etc/apache2/conf-enabled/environment.conf
+
 EXPOSE 80/tcp
 EXPOSE 502/tcp
 

@@ -4,6 +4,9 @@
 	@version 1.1
 	*/
 
+    // start session
+    session_start();
+
 	// import PhpModbus
 	require_once './phpmodbus/Phpmodbus/ModbusMaster.php';
 	$modbus = new ModbusMaster("127.0.0.1", "TCP");
@@ -28,11 +31,26 @@
 				exit();
 
 			case "manualStop":
-				$modbus->writeMultipleCoils($unitId, 0, [0]);
+                if(isset($_SESSION['auth']) && $_SESSION['auth'] == 'operator')
+				    $modbus->writeMultipleCoils($unitId, 0, [0]);
 				exit();
 			case "manualStart":
-				$modbus->writeMultipleCoils($unitId, 0, [1]);
+                if(isset($_SESSION['auth']) && $_SESSION['auth'] == 'operator')
+				    $modbus->writeMultipleCoils($unitId, 0, [1]);
 				exit();
+            case "auth":
+                if(isset($_GET['pass']) && $_GET['pass'] === apache_getenv('OPERATOR_PWD'))
+                {
+                    $_SESSION['auth'] = 'operator';
+                    print "ok";
+                }
+                exit();
+            case "deauth":
+                // remove all session variables
+                session_unset();
+                // destroy the session
+                session_destroy();
+                exit();
 		}
 	}
 ?>
@@ -44,6 +62,12 @@
 		var registers = new Array();
 		var broken = false;
 
+        var auth = "anonymous";
+        <?php
+            if(isset($_SESSION['auth']) && $_SESSION['auth'] == 'operator')
+                echo "auth = \"operator\";";
+        ?>
+
 		function updateCoils()
 		{
 			var div_manual = document.getElementById('div_status_manual');
@@ -54,12 +78,14 @@
 			{
 				div_manual.style.backgroundColor = "red";
 				button_stop.disabled = true;
-				button_start.disabled = false;
+                if(auth == "operator")
+				    button_start.disabled = false;
 			}
 			if(coils[0] == true)
 			{
 				div_manual.style.backgroundColor = "green";
-				button_stop.disabled = false;
+                if(auth == "operator")
+				    button_stop.disabled = false;
 				button_start.disabled = true;
 			}
 			if(coils[1] == false)
@@ -113,6 +139,37 @@
 			xhr.send(null);
 		}
 
+        function authent()
+        {
+            var password = prompt("Mot de passe");
+            if(password == null || password == "")
+                return;
+
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function()
+			{
+				if(this.readyState == XMLHttpRequest.DONE)
+                    if(this.responseText == "ok")
+                        location.reload();
+                    else
+                        alert("Mauvais mot de passe");
+			}
+			xhr.open('GET', 'index.php?act=auth&pass='+password, true);
+			xhr.send(null);
+        }
+
+        function deauthent()
+        {
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function()
+			{
+				if(this.readyState == XMLHttpRequest.DONE)
+                    location.reload();
+			}
+			xhr.open('GET', 'index.php?act=deauth', true);
+			xhr.send(null);
+        }
+
 		function updateData()
 		{
 			var xhr = new XMLHttpRequest();
@@ -150,6 +207,21 @@
 <center>
 <input style="text-align: center" onclick="manualStart()" type="button" id="button_start" value="START" disabled><br />
 <input style="text-align: center" onclick="manualStop()" type="button" id="button_stop" value="STOP" disabled>
+<br /><br /><br />
+<?php
+if(isset($_SESSION['auth']) && $_SESSION['auth'] == 'operator')
+{
+?>
+<input style="text-align: center" onclick="deauthent()" type="button" id="button_deauth" value="Déconnexion">
+<?php
+}
+else
+{
+?>
+<input style="text-align: center" onclick="authent()" type="button" id="button_auth" value="Connexion opérateur">
+<?php
+}
+?>
 </center>
 </td>
 <td width="5%" style="text-align: center; border: 1px solid black" valign="top">
