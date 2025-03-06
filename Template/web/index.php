@@ -23,7 +23,7 @@
 				$registers = $modbus->readMultipleRegisters($unitId, 0, 10);
 				foreach($registers as $key => $value)
 					$output['registers'][$key] = PhpType::bytes2unisgnedInt($value);
-				print json_encode($output);
+				print json_encode(value: $output);
 				exit();
 		}
 	}

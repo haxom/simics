@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'template_process.py'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import signal
 # System
@@ -31,10 +31,10 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def initdb():
     try:
-        client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
+        client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
         for registre in range(0, 10):
-            client.write_coil(registre, bool(randbits(1)), slave=UNIT)
-            client.write_register(registre, bool(randbits(1)), slave=UNIT)
+            client.write_coil(address=registre, value=bool(randbits(1)), slave=UNIT)
+            client.write_register(address=registre, value=bool(randbits(1)), slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
         print('[error] %s' % err)
@@ -50,22 +50,22 @@ def loop_process():
     while True:
         sleep(1)
         try:
-            client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
+            client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
 
-            coils = client.read_coils(0, count=registre_count, slave=UNIT)
+            coils = client.read_coils(address=0, count=registre_count, slave=UNIT)
             coils = coils.bits[:registre_count]
             # flipping booleans from list coils
             coils = [not i for i in coils]
-            client.write_coils(0, coils)
+            client.write_coils(address=0, values=coils, slave=UNIT)
 
             registers = client.read_holding_registers(
-                0,
+                address=0,
                 count=registre_count,
                 slave=UNIT
             )
             registers = registers.registers[:registre_count]
             registers = [i+1 for i in registers]
-            client.write_registers(0, registers, slave=UNIT)
+            client.write_registers(address=0, values=registers, slave=UNIT)
 
             updateGPIO(coils, registers)
         except Exception as err:
