@@ -28,7 +28,7 @@
 	$LIGHT1 = $modbus->readMultipleRegisters(45, 7, 1)[1];
 	$LIGHT2 = $modbus->readMultipleRegisters(45, 8, 1)[1];
 
-	$GAP = intval(file_get_contents('hauteur.txt', NULL, NULL, 0, 3));
+	$GAP = intval(value: file_get_contents(filename: 'hauteur.txt', use_include_path: false, context: NULL, offset: 0, length: 3));
 	//if($GAP > 100 or $GAP < 0)
 	//	$GAP = 100;
 
@@ -70,6 +70,6 @@
 	$modbus->writeMultipleRegister(45, 5, array($C_DOWN), $data_type);
 	$modbus->writeMultipleRegister(45, 6, array($C_STOP), $data_type);
 
-	file_put_contents('hauteur.txt', $GAP);
+	file_put_contents(filename: 'hauteur.txt', data: $GAP);
 
 	echo $CAPT1.':'.$CAPT2.':'.	$M_UP.':'.$M_DOWN.':'.$C_UP.':'.$C_DOWN.':'.$C_STOP.':'.$LIGHT1.':'.$LIGHT2.':'.$GAP;

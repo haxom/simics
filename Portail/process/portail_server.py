@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'portail_server.py'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import signal
 # System
@@ -46,7 +46,7 @@ def init():
     identity.VendorUrl = 'https://github.com/haxom/'
     identity.ProductName = 'SIMU-ICS'
     identity.ModelName = 'PORTAIL'
-    identity.MajorMinorRevision = '1.0.0'
+    identity.MajorMinorRevision = '1.3.0'
 
     print(f'Modbus slave launched on {listen_int}:{listen_port}')
     StartTcpServer(

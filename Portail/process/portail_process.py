@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'portail_process.py'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import signal
 # System
@@ -41,16 +41,16 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def initdb():
     try:
-        client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
-        client.write_register(0, CAPT1, slave=UNIT)
-        client.write_register(1, CAPT2, slave=UNIT)
-        client.write_register(2, M_UP, slave=UNIT)
-        client.write_register(3, M_DOWN, slave=UNIT)
-        client.write_register(4, C_UP, slave=UNIT)
-        client.write_register(5, C_DOWN, slave=UNIT)
-        client.write_register(6, C_STOP, slave=UNIT)
-        client.write_register(7, LIGHT1, slave=UNIT)
-        client.write_register(8, LIGHT2, slave=UNIT)
+        client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
+        client.write_register(address=0, value=CAPT1, slave=UNIT)
+        client.write_register(address=1, value=CAPT2, slave=UNIT)
+        client.write_register(address=2, value=M_UP, slave=UNIT)
+        client.write_register(address=3, value=M_DOWN, slave=UNIT)
+        client.write_register(address=4, value=C_UP, slave=UNIT)
+        client.write_register(address=5, value=C_DOWN, slave=UNIT)
+        client.write_register(address=6, value=C_STOP, slave=UNIT)
+        client.write_register(address=7, value=LIGHT1, slave=UNIT)
+        client.write_register(address=8, value=LIGHT2, slave=UNIT)
     except Exception as err:
         print('[error] Can\'t init the Modbus coils')
         print('[error] %s' % err)
@@ -65,18 +65,18 @@ def loop_process():
     while True:
         sleep(1)
         try:
-            client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
+            client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
 
             # read registers
-            CAPT1 = client.read_holding_registers(0, 1, slave=UNIT).registers[0]
-            CAPT2 = client.read_holding_registers(1, 1, slave=UNIT).registers[0]
-            M_UP = client.read_holding_registers(2, 1, slave=UNIT).registers[0]
-            M_DOWN = client.read_holding_registers(3, 1, slave=UNIT).registers[0]
-            C_UP = client.read_holding_registers(4, 1, slave=UNIT).registers[0]
-            C_DOWN = client.read_holding_registers(5, 1, slave=UNIT).registers[0]
-            C_STOP = client.read_holding_registers(6, 1, slave=UNIT).registers[0]
-            LIGHT1 = client.read_holding_registers(7, 1, slave=UNIT).registers[0]
-            LIGHT2 = client.read_holding_registers(8, 1, slave=UNIT).registers[0]
+            CAPT1 = client.read_holding_registers(address=0, count=1, slave=UNIT).registers[0]
+            CAPT2 = client.read_holding_registers(address=1, count=1, slave=UNIT).registers[0]
+            M_UP = client.read_holding_registers(address=2, count=1, slave=UNIT).registers[0]
+            M_DOWN = client.read_holding_registers(address=3, count=1, slave=UNIT).registers[0]
+            C_UP = client.read_holding_registers(address=4, count=1, slave=UNIT).registers[0]
+            C_DOWN = client.read_holding_registers(address=5, count=1, slave=UNIT).registers[0]
+            C_STOP = client.read_holding_registers(address=6, count=1, slave=UNIT).registers[0]
+            LIGHT1 = client.read_holding_registers(address=7, count=1, slave=UNIT).registers[0]
+            LIGHT2 = client.read_holding_registers(address=8, count=1, slave=UNIT).registers[0]
 
             # process
             LIGHT1 = CAPT1
@@ -92,15 +92,15 @@ def loop_process():
             # CAPT1 & CAPT2 are updated by the PHP script itself
 
             # save registers
-            client.write_register(0, CAPT1, slave=UNIT)
-            client.write_register(1, CAPT2, slave=UNIT)
-            client.write_register(2, M_UP, slave=UNIT)
-            client.write_register(3, M_DOWN, slave=UNIT)
-            client.write_register(4, C_UP, slave=UNIT)
-            client.write_register(5, C_DOWN, slave=UNIT)
-            client.write_register(6, C_STOP, slave=UNIT)
-            client.write_register(7, LIGHT1, slave=UNIT)
-            client.write_register(8, LIGHT2, slave=UNIT)
+            client.write_register(address=0, value=CAPT1, slave=UNIT)
+            client.write_register(address=1, value=CAPT2, slave=UNIT)
+            client.write_register(address=2, value=M_UP, slave=UNIT)
+            client.write_register(address=3, value=M_DOWN, slave=UNIT)
+            client.write_register(address=4, value=C_UP, slave=UNIT)
+            client.write_register(address=5, value=C_DOWN, slave=UNIT)
+            client.write_register(address=6, value=C_STOP, slave=UNIT)
+            client.write_register(address=7, value=LIGHT1, slave=UNIT)
+            client.write_register(address=8, value=LIGHT2, slave=UNIT)
         except Exception as err:
             print('[error] %s' % err)
             err_count += 1
