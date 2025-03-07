@@ -23,6 +23,29 @@ cmd> for /f "delims=" %i in ('docker run --publish 80:80 --publish 502:502 --rm 
 cmd> docker inspect --format='{{.NetworkSettings.IPAddress}}' %DOCKER_ID%
 ```
 
+## Services accessibles
+
+```
+$ nmap -n -p- --script=modbus-discover <PORTAIL_IP>
+Starting Nmap 7.93 ( https://nmap.org ) at 2025-03-07 09:50 CET
+Nmap scan report for A.B.C.D
+Host is up (0.000056s latency).
+Not shown: 65533 closed tcp ports (conn-refused)
+PORT    STATE SERVICE
+80/tcp  open  http
+502/tcp open  modbus
+| modbus-discover: 
+|   sid 0x2d: 
+|     Slave ID data: HAXOM-SIMU-ICS-PORTAIL-1.3.0\xFF
+|_    Device identification: HAXOM SIMU-ICS-PORTAIL 1.3.0
+
+Nmap done: 1 IP address (1 host up) scanned in 1.06 seconds
+```
+
+- IHM de supervision web [http://<PORTAIL_IP/](http://<PORTAIL_IP/) (**l'accès est en HTTP et non HTTPS**)
+
+![IHM de superivison](IHM_portail.png)
+
 ## Suppression
 ```
 $ docker rmi simics_portail
