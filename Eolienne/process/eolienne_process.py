@@ -3,7 +3,7 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'eolienne_process.py'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import signal
 # System
@@ -30,12 +30,14 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def initdb():
     try:
-        client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
+        client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
         # Coils table
         # 0 : eolienne status (manual)
         # 1 : eolienne status (wind speed control, should be between 15km/h and 90km/h)
         #                     (corresponding to 4m/s and 25m/s)
-        # 25 : eolienne broken status
+        #
+        # Discret Input table
+        # 40 : eolienne broken status
         #
         # Holding registers table
         # 0 : wind speed (m/s)
@@ -45,7 +47,7 @@ def initdb():
         # 11 : wind max (25 m/s)
 
         client.write_coils(0, [True, True], slave=UNIT)
-        client.write_coils(25, [False], slave=UNIT)
+        #client.write_coils(25, [False], slave=UNIT)
         client.write_registers(0, [0, 0], slave=UNIT)
         client.write_registers(10, [4, 25], slave=UNIT)
     except Exception as err:
@@ -62,15 +64,15 @@ def loop_process():
         sleep(1)
 
         try:
-            client = ModbusTcpClient(modbus_server_ip, modbus_server_port)
+            client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
 
-            coils = client.read_coils(0, count=2, slave=UNIT).bits
+            coils = client.read_coils(address=0, count=2, slave=UNIT).bits
             coils = coils[:2]
-            registers = client.read_holding_registers(0, count=2, slave=UNIT).registers
+            registers = client.read_holding_registers(address=0, count=2, slave=UNIT).registers
             registers = registers[:2]
 
-            speed_min, speed_max = client.read_holding_registers(10, 2, slave=UNIT).registers
-            broken = client.read_coils(25, count=1, slave=UNIT).bits[0]
+            speed_min, speed_max = client.read_holding_registers(address=10, count=2, slave=UNIT).registers
+            broken = client.read_discrete_inputs(address=40, count=1, slave=UNIT).bits[0]
 
             speed = int(open(WIND_SPEED_FILE, 'r').read())
             registers[0] = speed
@@ -79,21 +81,21 @@ def loop_process():
             if broken:
                 print('[broken eolienne]')
                 registers[1] = 0
-                client.write_registers(0, registers, slave=UNIT)
+                client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # manual stop
             if not coils[0]:
                 print('[stop manually]')
                 registers[1] = 0
-                client.write_registers(0, registers, slave=UNIT)
+                client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # wind speed to slow/quick
             if speed < speed_min or speed > speed_max:
                 print('[stop due to the wind speed] (%d m/s)' % registers[0])
                 coils[1] = False
-                client.write_coil(1, False, slave=UNIT)
+                client.write_coil(address=1, value=False, slave=UNIT)
                 registers[1] = 0
-                client.write_registers(0, registers, slave=UNIT)
+                client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
 
             powerloss = 0  # 0 % of lost
@@ -107,9 +109,11 @@ def loop_process():
             if speed > 25:
                 broken = True
                 print('[wind breaks the eolienne]')
-                client.write_coil(25, True, slave=UNIT)
+                # signal Server that eolienne is broken
+                with open("/tmp/broken", "w") as f:
+                    f.write("true")
                 registers[1] = 0
-                client.write_registers(0, registers, slave=UNIT)
+                client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
 
             # otherwise, running
@@ -124,8 +128,8 @@ def loop_process():
                 power = power*(1-powerloss/100)
             registers[1] = int(power)
 
-            client.write_coils(0, coils, slave=UNIT)
-            client.write_registers(0, registers, slave=UNIT)
+            client.write_coils(address=0, values=coils, slave=UNIT)
+            client.write_registers(address=0, values=registers, slave=UNIT)
 
         except Exception as err:
             print(f'[ERROR] {err}')

@@ -1,7 +1,7 @@
 <?php
 	/*
 	@author haxom <haxom@haxom.net>
-	@version 1.1
+	@version 1.3
 	*/
 
     // start session
@@ -23,11 +23,11 @@
 			case "readAll":
 				$output = Array();
 				$output['coils'] = $modbus->readCoils($unitId, 0, 2);
-				$output['broken'] = $modbus->readCoils($unitId, 25, 1);
-				$registers = array_chunk($modbus->readMultipleRegisters($unitId, 0, 2), 2);
+				$output['broken'] = $modbus->readInputDiscretes($unitId, 40, 1);
+				$registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 0, 2), length: 2);
 				foreach($registers as $key => $value)
 					$output['registers'][$key] = PhpType::bytes2unsignedInt($value);
-				print json_encode($output);
+				print json_encode(value: $output);
 				exit();
 
 			case "manualStop":
@@ -39,7 +39,7 @@
 				    $modbus->writeMultipleCoils($unitId, 0, [1]);
 				exit();
             case "auth":
-                if(isset($_GET['pass']) && $_GET['pass'] === apache_getenv('OPERATOR_PWD'))
+                if(isset($_GET['pass']) && $_GET['pass'] === apache_getenv(variable: 'OPERATOR_PWD'))
                 {
                     $_SESSION['auth'] = 'operator';
                     print "ok";

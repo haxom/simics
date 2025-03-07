@@ -3,15 +3,17 @@
 __author__ = 'haxom'
 __email__ = 'haxom@haxom.net'
 __file__ = 'eolienne_server.py'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import signal
 import sys
+import asyncio
+from pathlib import Path
 
 from pymodbus.datastore import (ModbusSequentialDataBlock, ModbusServerContext,
                                 ModbusSlaveContext)
 from pymodbus.device import ModbusDeviceIdentification
-from pymodbus.server import StartTcpServer
+from pymodbus.server import StartAsyncTcpServer
 
 # Params
 listen_int = '0.0.0.0'
@@ -27,7 +29,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def init():
+async def init():
     slaves = {
         UNIT: ModbusSlaveContext(
             di=ModbusSequentialDataBlock(0, [0]*50),
@@ -44,19 +46,39 @@ def init():
     identity.VendorUrl = 'https://github.com/haxom/simics/'
     identity.ProductName = 'SIMU-TURBOELEC-EOLIENNE'
     identity.ModelName = 'EOLIENNE'
-    identity.MajorMinorRevision = '1.0.0'
+    identity.MajorMinorRevision = '1.3.0'
 
-    print(f'Modbus slave launched on {listen_int}:{listen_port}')
-    StartTcpServer(
+    await asyncio.gather(
+        check_broken_eolienne(context),
+        run_server(context, identity, (listen_int, listen_port)),
+    )
+    
+
+async def run_server(context, identity, address):
+    print(f'Modbus slave launched on {address}')
+    await StartAsyncTcpServer(
         context=context,
         identity=identity,
-        address=(listen_int, listen_port)
+        address=address,
     )
 
 
+async def check_broken_eolienne(context):
+    broken_file = Path("/tmp/broken")
+    while True:        
+        if broken_file.is_file() and "true" in broken_file.read_text().lower():
+            print("broken !")
+            print("ok")
+            context[UNIT].setValues(
+                fc_as_hex=2,
+                address=40,
+                values=[True],
+            )
+        await asyncio.sleep(1)
+
 if __name__ == '__main__':
     try:
-        init()
+        asyncio.run(init())
     except Exception as err:
         print('[error] Can\'t init Modbus server ...')
         print('[error] %s' % err)
