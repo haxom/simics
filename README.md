@@ -20,8 +20,3 @@ $ git submodule update --init
 
  * Processus d'un portail électrique
  * Processus d'une éolienne
-
-## Ongoing / Todo
-
- * Système simplifié d'une centrale nucléaire
-
