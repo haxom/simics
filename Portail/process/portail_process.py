@@ -55,8 +55,8 @@ def initdb():
         client.write_register(address=7, value=LIGHT1, slave=UNIT)
         client.write_register(address=8, value=LIGHT2, slave=UNIT)
     except Exception as err:
-        print("[error] Can\"t init the Modbus coils")
-        print("[error] %s" % err)
+        print("[error] Can't init the Modbus coils")
+        print(f"[error] {err}")
         print("[error] exiting...")
         sys.exit(1)
 
