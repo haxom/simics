@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding=utf8
-__author__ = 'haxom'
-__email__ = 'haxom@haxom.net'
-__file__ = 'eolienne_server.py'
-__version__ = '1.3'
+__author__ = "haxom"
+__email__ = "haxom@haxom.net"
+__file__ = "eolienne_server.py"
+__version__ = "1.3"
 
 import signal
 import sys
@@ -16,13 +16,14 @@ from pymodbus.device import ModbusDeviceIdentification
 from pymodbus.server import StartAsyncTcpServer
 
 # Params
-listen_int = '0.0.0.0'
+listen_int = "0.0.0.0"
 listen_port = 502
 UNIT = 0x42
+BROKEN_FILE = "/tmp/broken"
 
 
 def signal_handler(sig, frame):
-    print('CTRL+C pressed, exiting...')
+    print("CTRL+C pressed, exiting...")
     sys.exit(0)
 
 
@@ -41,21 +42,21 @@ async def init():
     context = ModbusServerContext(slaves=slaves, single=False)
 
     identity = ModbusDeviceIdentification()
-    identity.VendorName = 'HAXOM'
-    identity.ProductCode = 'SIMU-TURBOELEC'
-    identity.VendorUrl = 'https://github.com/haxom/simics/'
-    identity.ProductName = 'SIMU-TURBOELEC-EOLIENNE'
-    identity.ModelName = 'EOLIENNE'
-    identity.MajorMinorRevision = '1.3.0'
+    identity.VendorName = "HAXOM"
+    identity.ProductCode = "SIMU-TURBOELEC"
+    identity.VendorUrl = "https://github.com/haxom/simics/"
+    identity.ProductName = "SIMU-TURBOELEC-EOLIENNE"
+    identity.ModelName = "EOLIENNE"
+    identity.MajorMinorRevision = "1.3.0"
 
     await asyncio.gather(
         check_broken_eolienne(context),
         run_server(context, identity, (listen_int, listen_port)),
     )
-    
+
 
 async def run_server(context, identity, address):
-    print(f'Modbus slave launched on {address}')
+    print(f"Modbus slave launched on {address}")
     await StartAsyncTcpServer(
         context=context,
         identity=identity,
@@ -64,11 +65,9 @@ async def run_server(context, identity, address):
 
 
 async def check_broken_eolienne(context):
-    broken_file = Path("/tmp/broken")
-    while True:        
+    broken_file = Path(BROKEN_FILE)
+    while True:
         if broken_file.is_file() and "true" in broken_file.read_text().lower():
-            print("broken !")
-            print("ok")
             context[UNIT].setValues(
                 fc_as_hex=2,
                 address=40,
@@ -76,11 +75,12 @@ async def check_broken_eolienne(context):
             )
         await asyncio.sleep(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     try:
         asyncio.run(init())
     except Exception as err:
-        print('[error] Can\'t init Modbus server ...')
-        print('[error] %s' % err)
-        print('[error] exiting...')
+        print("[error] Can't init Modbus server ...")
+        print(f"[error] {err}")
+        print("[error] exiting...")
         sys.exit(1)

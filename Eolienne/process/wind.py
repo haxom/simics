@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding=utf8
-__author__ = 'haxom'
-__email__ = 'haxom@haxom.net'
-__file__ = 'wind.py'
-__version__ = '1.0'
+__author__ = "haxom"
+__email__ = "haxom@haxom.net"
+__file__ = "wind.py"
+__version__ = "1.0"
 
 import signal
 import sys
@@ -14,18 +14,20 @@ from time import sleep
 WIND_SPEED_INIT = 10
 WIND_SPEED_FILE = "/tmp/wind.txt"
 
+
 def signal_handler(sig, frame):
-    print('CTRL+C pressed, exiting...')
+    print("CTRL+C pressed, exiting...")
     sys.exit(0)
+
 
 signal.signal(signal.SIGINT, signal_handler)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     wind_speed = WIND_SPEED_INIT
     gust_state = 0  # 0 = no / 1 = begin / 2 = in progress / 3 = last
     gust_cmp = 0
 
-    wind_fd = open(WIND_SPEED_FILE, 'w')
+    wind_fd = open(WIND_SPEED_FILE, "w")
 
     while True:
         sleep(1)
@@ -48,15 +50,15 @@ if __name__ == '__main__':
         else:
             wind_speed -= 1
         if gust_state == 1:
-            print('**new gust**')
+            print("**new gust**")
             wind_speed += 10
         if gust_state == 3:
-            print('**eo gust**')
+            print("**eo gust**")
             wind_speed -= 10
         if wind_speed < 0:
             wind_speed = 0
         if wind_speed > 30:
             wind_speed = 30
-        
+
         wind_fd.write(str(wind_speed))
         wind_fd.seek(0)

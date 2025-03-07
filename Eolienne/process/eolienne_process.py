@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # coding=utf8
-__author__ = 'haxom'
-__email__ = 'haxom@haxom.net'
-__file__ = 'eolienne_process.py'
-__version__ = '1.3'
+__author__ = "haxom"
+__email__ = "haxom@haxom.net"
+__file__ = "eolienne_process.py"
+__version__ = "1.3"
 
 import signal
 # System
@@ -14,14 +14,15 @@ from time import sleep
 from pymodbus.client import ModbusTcpClient
 
 # Options
-modbus_server_ip = '127.0.0.1'
+modbus_server_ip = "127.0.0.1"
 modbus_server_port = 502
 UNIT = 0x42
-WIND_SPEED_FILE = '/tmp/wind.txt'
+WIND_SPEED_FILE = "/tmp/wind.txt"
+BROKEN_FILE = "/tmp/broken"
 
 
 def signal_handler(sig, frame):
-    print('CTRL+C pressed, exiting...')
+    print("CTRL+C pressed, exiting...")
     sys.exit(0)
 
 
@@ -30,11 +31,15 @@ signal.signal(signal.SIGINT, signal_handler)
 
 def initdb():
     try:
-        client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
+        client = ModbusTcpClient(
+            host=modbus_server_ip,
+            port=modbus_server_port
+        )
         # Coils table
         # 0 : eolienne status (manual)
-        # 1 : eolienne status (wind speed control, should be between 15km/h and 90km/h)
-        #                     (corresponding to 4m/s and 25m/s)
+        # 1 : eolienne status (wind speed control
+        #                       should be between 15km/h and 90km/h
+        #                       corresponding to 4m/s and 25m/s)
         #
         # Discret Input table
         # 40 : eolienne broken status
@@ -47,13 +52,12 @@ def initdb():
         # 11 : wind max (25 m/s)
 
         client.write_coils(0, [True, True], slave=UNIT)
-        #client.write_coils(25, [False], slave=UNIT)
         client.write_registers(0, [0, 0], slave=UNIT)
         client.write_registers(10, [4, 25], slave=UNIT)
     except Exception as err:
-        print('[error] Can\'t init the Modbus coils')
-        print('[error] %s' % err)
-        print('[error] exiting...')
+        print("[error] Can't init the Modbus coils")
+        print(f"[error] {err}")
+        print("[error] exiting...")
         sys.exit(1)
 
 
@@ -64,34 +68,49 @@ def loop_process():
         sleep(1)
 
         try:
-            client = ModbusTcpClient(host=modbus_server_ip, port=modbus_server_port)
+            client = ModbusTcpClient(
+                host=modbus_server_ip,
+                port=modbus_server_port
+            )
 
             coils = client.read_coils(address=0, count=2, slave=UNIT).bits
             coils = coils[:2]
-            registers = client.read_holding_registers(address=0, count=2, slave=UNIT).registers
+            registers = client.read_holding_registers(
+                address=0,
+                count=2,
+                slave=UNIT
+            ).registers
             registers = registers[:2]
 
-            speed_min, speed_max = client.read_holding_registers(address=10, count=2, slave=UNIT).registers
-            broken = client.read_discrete_inputs(address=40, count=1, slave=UNIT).bits[0]
+            speed_min, speed_max = client.read_holding_registers(
+                address=10,
+                count=2,
+                slave=UNIT
+            ).registers
+            broken = client.read_discrete_inputs(
+                address=40,
+                count=1,
+                slave=UNIT
+            ).bits[0]
 
-            speed = int(open(WIND_SPEED_FILE, 'r').read())
+            speed = int(open(WIND_SPEED_FILE, "r").read())
             registers[0] = speed
 
             # broken
             if broken:
-                print('[broken eolienne]')
+                print("[broken eolienne]")
                 registers[1] = 0
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # manual stop
             if not coils[0]:
-                print('[stop manually]')
+                print("[stop manually]")
                 registers[1] = 0
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # wind speed to slow/quick
             if speed < speed_min or speed > speed_max:
-                print('[stop due to the wind speed] (%d m/s)' % registers[0])
+                print(f"[stop due to the wind speed] ({registers[0]} m/s)")
                 coils[1] = False
                 client.write_coil(address=1, value=False, slave=UNIT)
                 registers[1] = 0
@@ -99,18 +118,20 @@ def loop_process():
                 continue
 
             powerloss = 0  # 0 % of lost
-            # unwanted case : Wind speed < 4 m/s will consume power production (thermic loss)
+            # unwanted case
+            # Wind speed < 4 m/s will consume power production (thermic loss)
             if speed < 4:
                 powerloss = 25
             if speed < 2:
                 powerloss = 50
 
-            # unwanted case : Wind speed > 25 m/s will break the eolienne
+            # unwanted case
+            # Wind speed > 25 m/s will break the eolienne
             if speed > 25:
                 broken = True
-                print('[wind breaks the eolienne]')
+                print("[wind breaks the eolienne]")
                 # signal Server that eolienne is broken
-                with open("/tmp/broken", "w") as f:
+                with open(BROKEN_FILE, "w") as f:
                     f.write("true")
                 registers[1] = 0
                 client.write_registers(address=0, values=registers, slave=UNIT)
@@ -132,15 +153,15 @@ def loop_process():
             client.write_registers(address=0, values=registers, slave=UNIT)
 
         except Exception as err:
-            print(f'[ERROR] {err}')
+            print(f"[ERROR] {err}")
             err_count += 1
             if err_count == 5:
-                print('[CRITICAL] Too much errors occured during the process !')
-                print('[CRITICAL] Exiting.')
+                print("[CRITICAL] Too much errors occured during the process!")
+                print("[CRITICAL] Exiting.")
                 sys.exit(1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sleep(10)
     initdb()
     loop_process()
