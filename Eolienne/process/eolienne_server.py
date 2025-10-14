@@ -41,6 +41,10 @@ async def init():
     }
     context = ModbusServerContext(slaves=slaves, single=False)
 
+    # un-broken equipment
+    with Path(BROKEN_FILE).open('w') as f:
+        f.write("false")
+
     identity = ModbusDeviceIdentification()
     identity.VendorName = "HAXOM"
     identity.ProductCode = "SIMU-TURBOELEC"
