@@ -27,6 +27,9 @@
 				$registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 0, 12), length: 2);
 				foreach($registers as $key => $value)
 					$output['registers'][$key] = PhpType::bytes2unsignedInt($value);
+				$limit_value_registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 20, 3), length: 2);
+				foreach($limit_value_registers as $key => $value)
+					$output['limit_value_registers'][$key] = PhpType::bytes2unsignedInt($value);
 				print json_encode(value: $output);
 				exit();
 
@@ -127,9 +130,9 @@
 		{
 			document.getElementById('input_pitch_angle').value = registers[0] + " °";
 			document.getElementById('input_wind_speed').value = registers[1] + " m/s";
-			document.getElementById('input_rotor_speed').value = registers[2] + " RPM (" + Math.round((registers[2] / registers[3]) * 100) + " %)";
-			document.getElementById('input_yaw_position').value = registers[4] + " °";
-			//document.getElementById('input_temperature').value = registers[5] + " °C";
+			document.getElementById('input_rotor_speed').value = registers[2] + " RPM (" + Math.round((registers[2] / limit_value_registers[2]) * 100) + " %)";
+			document.getElementById('input_yaw_position').value = registers[3] + " °";
+			//document.getElementById('input_temperature').value = registers[4] + " °C";
 			document.getElementById('input_mech_power_production').value = registers[10] + " kW";
 			document.getElementById('input_elec_power_production').value = registers[11] + " kW";
 		}
@@ -230,6 +233,7 @@
 					var results = JSON.parse(this.responseText);
 					coils = results['coils'];
 					registers = results['registers'];
+					limit_value_registers = results['limit_value_registers'];
 					broken = results['broken'][0]
 					updateCoils();
 					updateRegisters();
@@ -246,12 +250,12 @@
 <body>
 <center><h1>TURBOELEC - Supervision Eolienne</h1></center>
 <center>
-<table style="border-collapse: collapse;" width="860px">
+<table style="border-collapse: collapse;" width="900px">
 <tr>
-<td width="150px" style="border: 1px solid black;" valign="top">
+<td width="190px" style="border: 1px solid black;" valign="top">
 <center><b>[ Turbine State ]</b></center><br />
 <div id="div_status_manual" style="border-radius: 5px; border: 1px solid black; display: inline;background-color: red;" width="25px">&nbsp; &nbsp; &nbsp; &nbsp;</div> Manual<br /><br />
-<div id="div_status_auto" style="border-radius: 5px; border: 1px solid black; display: inline; background-color: red;" width="25px">&nbsp; &nbsp; &nbsp; &nbsp;</div> Automatic<br /> <br />
+<div id="div_status_auto" style="border-radius: 5px; border: 1px solid black; display: inline; background-color: red;" width="25px">&nbsp; &nbsp; &nbsp; &nbsp;</div> Auto<br /> <br />
 <div id="div_status" style="text-align: center;">
     <img src="pics/run.png" id="status_img_run" style="display: none" width="25px" height="25px">
     <img src="pics/stop.png" id="status_img_stop" style="display: none" width="25px" height="25px">

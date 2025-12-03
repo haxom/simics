@@ -23,7 +23,8 @@ WIND_SPEED_FILE = "/tmp/wind.txt"
 BROKEN_FILE = "/tmp/broken"
 
 # --- Fixed turbine parameters ---
-# Some values from Vestas V27 (https://en.wind-turbine-models.com/turbines/274-vestas-v27)
+# Some values from Vestas V27
+# (https://en.wind-turbine-models.com/turbines/274-vestas-v27)
 R = 27/2                    # rotor radius (m)
 A = math.pi * R**2          # swept area (m²)
 TIP_SPEED_MAX = 61          # m/s
@@ -47,30 +48,34 @@ signal.signal(signal.SIGINT, signal_handler)
 def lambda_opt(beta_deg):
     return 7.5 - 0.12*beta_deg
 
-# --- Cp approximation (drops as pitch increases) ---
+
+# --- Cp approximation (drops as pitch increases) --
 def cp(lambda_val, beta_deg):
     cp0 = 0.42                            # max Cp
     loss = 0.005 * beta_deg               # degrade with pitch
     return max(0.0, cp0 - loss)
 
+
 # --- Rotor speed in RPM ---
 def rpm(V_ms, yaw_deg, beta_deg, rpm_max):
     Veff = V_ms * math.cos(math.radians(yaw_deg))
-    if Veff <= 0: 
+    if Veff <= 0:
         return 0.0
-    lam  = lambda_opt(beta_deg)
+    lam = lambda_opt(beta_deg)
     rpm_val = (60 / (2 * math.pi)) * (lam * Veff / R)
     return int(min(rpm_val/2, rpm_max))
+
 
 # --- Mechanical power (from aerodynamics) ---
 def mechanical_power(V_ms, yaw_deg, beta_deg):
     Veff = V_ms * math.cos(math.radians(yaw_deg))
-    if Veff <= 0: 
+    if Veff <= 0:
         return 0.0
     lam = lambda_opt(beta_deg)
     cp_val = cp(lam, beta_deg)
     P_wind = 0.5 * RHO * A * Veff**3      # W
     return (cp_val * P_wind) / 1000.0     # kW
+
 
 # --- Electrical power (after efficiency & rated cap) ---
 def electrical_power(V_ms, yaw_deg, beta_deg):
@@ -100,20 +105,20 @@ def initdb():
         # 0 : pitch angle (°)
         # 1 : wind speed (m/s)
         # 2 : rotor speed (rpm)
-        # 3 : max rotor speed (rpm)
-        # 4 : yaw angle (°)
-        # 5 : temperature (°C) - not implemented yet
-        # 6-9 : reserved
+        # 3 : yaw angle (°)
+        # 4 : temperature (°C) - not implemented yet
+        # 5-9 : reserved
         # 10 : mechanical power (kW)
         # 11 : electrical power (kW)
         # 12-19 : reserved
         # 20 : wind min speed (4m/s)
         # 21 : wind max (25 m/s)
+        # 22 : max rotor speed (rpm)
 
         client.write_coils(0, [True, True], slave=UNIT)
-        client.write_registers(0, [0, 0, 0, RPM_MAX, 0, 0], slave=UNIT)
+        client.write_registers(0, [0, 0, 0, 0, 0], slave=UNIT)
         client.write_registers(10, [0, 0], slave=UNIT)
-        client.write_registers(20, [4, 25], slave=UNIT)
+        client.write_registers(20, [4, 25, RPM_MAX], slave=UNIT)
     except Exception as err:
         print("[error] Can't init the Modbus coils")
         print(f"[error] {err}")
@@ -142,13 +147,11 @@ def loop_process():
             ).registers
             registers = registers[:12]
 
-            speed_min, speed_max = client.read_holding_registers(
+            speed_min, speed_max, max_rotor_speed = client.read_holding_registers(
                 address=20,
-                count=2,
+                count=3,
                 slave=UNIT
             ).registers
-
-            max_rotor_speed = registers[3]
 
             broken = client.read_discrete_inputs(
                 address=40,
@@ -160,11 +163,11 @@ def loop_process():
             registers[1] = speed
 
             yaw = randint(1, 2)
-            registers[4] = yaw
+            registers[3] = yaw
             pitch = randint(10, 20)
             registers[0] = pitch
 
-            rotor_speed = rpm(speed, yaw, pitch, registers[3])
+            rotor_speed = rpm(speed, yaw, pitch, max_rotor_speed)
             registers[2] = rotor_speed
 
             # broken
@@ -177,11 +180,11 @@ def loop_process():
             # manual stop
             if not coils[0]:
                 print("[stop manually]")
-                registers[0] = 0 # pitch
-                registers[2] = 0 # rotor speed
-                registers[4] = 0 # yaw
-                registers[10] = 0 # mechanical power
-                registers[11] = 0 # electrical power
+                registers[0] = 0  # pitch
+                registers[2] = 0  # rotor speed
+                registers[3] = 0  # yaw
+                registers[10] = 0  # mechanical power
+                registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # wind speed too slow/quick
@@ -189,11 +192,11 @@ def loop_process():
                 print(f"[stop due to the wind speed] ({registers[0]} m/s)")
                 coils[1] = False
                 client.write_coil(address=1, value=False, slave=UNIT)
-                registers[0] = 0 # pitch
-                registers[2] = 0 # rotor speed
-                registers[4] = 0 # yaw
-                registers[10] = 0 # mechanical power
-                registers[11] = 0 # electrical power
+                registers[0] = 0  # pitch
+                registers[2] = 0  # rotor speed
+                registers[3] = 0  # yaw
+                registers[10] = 0  # mechanical power
+                registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
             # rotor speed too high
@@ -201,11 +204,11 @@ def loop_process():
                 print(f"[stop due to rotor RPM to high] ({rotor_speed} rpm (max {max_rotor_speed} rpm))")
                 coils[1] = False
                 client.write_coil(address=1, value=False, slave=UNIT)
-                registers[0] = 0 # pitch
-                registers[2] = 0 # rotor speed
-                registers[4] = 0 # yaw
-                registers[10] = 0 # mechanical power
-                registers[11] = 0 # electrical power
+                registers[0] = 0  # pitch
+                registers[2] = 0  # rotor speed
+                registers[3] = 0  # yaw
+                registers[10] = 0  # mechanical power
+                registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
 
@@ -217,11 +220,11 @@ def loop_process():
                 # signal Server that eolienne is broken
                 with open(BROKEN_FILE, "w") as f:
                     f.write("true")
-                registers[0] = 0 # pitch
-                registers[2] = 0 # rotor speed
-                registers[4] = 0 # yaw
-                registers[10] = 0 # mechanical power
-                registers[11] = 0 # electrical power
+                registers[0] = 0  # pitch
+                registers[2] = 0  # rotor speed
+                registers[3] = 0  # yaw
+                registers[10] = 0  # mechanical power
+                registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
 
@@ -233,11 +236,11 @@ def loop_process():
                 # signal Server that eolienne is broken
                 with open(BROKEN_FILE, "w") as f:
                     f.write("true")
-                registers[0] = 0 # pitch
-                registers[2] = 0 # rotor speed
-                registers[4] = 0 # yaw
-                registers[10] = 0 # mechanical power
-                registers[11] = 0 # electrical power
+                registers[0] = 0  # pitch
+                registers[2] = 0  # rotor speed
+                registers[3] = 0  # yaw
+                registers[10] = 0  # mechanical power
+                registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
                 continue
 
