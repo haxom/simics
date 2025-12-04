@@ -1,7 +1,7 @@
 <?php
 	/*
 	@author haxom <haxom@haxom.net>
-	@version 1.3
+	@version 1.4
 	*/
 
     // start session
@@ -27,7 +27,7 @@
 				$registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 0, 12), length: 2);
 				foreach($registers as $key => $value)
 					$output['registers'][$key] = PhpType::bytes2unsignedInt($value);
-				$limit_value_registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 20, 3), length: 2);
+				$limit_value_registers = array_chunk(array: $modbus->readMultipleRegisters($unitId, 20, 6), length: 2);
 				foreach($limit_value_registers as $key => $value)
 					$output['limit_value_registers'][$key] = PhpType::bytes2unsignedInt($value);
 				print json_encode(value: $output);
@@ -102,11 +102,24 @@
 			if(coils[1] == true)
 				div_auto.style.backgroundColor = "green";
 
-			// images status
+			// status
 			var img_run = document.getElementById('status_img_run');
 			var img_stop = document.getElementById('status_img_stop');
 			var img_warning = document.getElementById('status_img_warning');
-			var img_error = document.getElementById('status_img_error');
+			var text_warning = document.getElementById('warning_text');
+
+            switch (limit_value_registers[5])
+            {
+                case 1:
+                    text_warning.textContent = "wind speed too low/high";
+                    break;
+                case 2:
+                    text_warning.textContent = "RPM too fast";
+                    break;
+                case 0:
+                default:
+                    text_warning.textContent = "";
+            }
 
 			if(coils[0] == true && coils[1] == true)
 			{
@@ -141,7 +154,8 @@
 		{
 			if(broken)
 			{
-				document.getElementById('status_img_error').style.display = "inline";
+				document.getElementById('status_error').style.display = "inline";
+				document.getElementById('status_text_error').style.display = "inline";
 				document.getElementById('status_img_warning').style.display = "none";
 				document.getElementById('status_img_run').style.display = "none";
 				document.getElementById('status_img_stop').style.display = "none";
@@ -258,9 +272,14 @@
 <div id="div_status_auto" style="border-radius: 5px; border: 1px solid black; display: inline; background-color: red;" width="25px">&nbsp; &nbsp; &nbsp; &nbsp;</div> Auto<br /> <br />
 <div id="div_status" style="text-align: center;">
     <img src="pics/run.png" id="status_img_run" style="display: none" width="25px" height="25px">
-    <img src="pics/stop.png" id="status_img_stop" style="display: none" width="25px" height="25px">
+    <img src="pics/stop.png" id="status_img_stop" style="display: none" width="25px" height="25px"><br />
     <img src="pics/warning.png" id="status_img_warning" style="display: none" width="25px" height="25px">
-    <img src="pics/error.png" id="status_img_error" style="display: none; animation: blink 1s infinite;" width="25px" height="25px">
+    <span id="warning_text"></span>
+    <!-- Broken -->
+    <div id="status_error" style="display: none">
+        <img src="pics/error.png" id="status_img_error" style="display: none; animation: blink 1s infinite;" width="25px" height="25px">
+        <br /><b>!!! BROKEN !!!</b>
+    </div>
     <br /><br />
 </div>
 <center><b>[ Operator ]</b></center><br />

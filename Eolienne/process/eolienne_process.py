@@ -3,7 +3,7 @@
 __author__ = "haxom"
 __email__ = "haxom@haxom.net"
 __file__ = "eolienne_process.py"
-__version__ = "1.3"
+__version__ = "1.4"
 
 import math
 from random import randint
@@ -114,11 +114,16 @@ def initdb():
         # 20 : wind min speed (4m/s)
         # 21 : wind max (25 m/s)
         # 22 : max rotor speed (rpm)
+        # 23-24  reserved
+        # 25 : automatic stop reason
+        #   - 0 : no reason
+        #   - 1 : wind speed
+        #   - 2 : rotor speed
 
         client.write_coils(0, [True, True], slave=UNIT)
         client.write_registers(0, [0, 0, 0, 0, 0], slave=UNIT)
         client.write_registers(10, [0, 0], slave=UNIT)
-        client.write_registers(20, [4, 25, RPM_MAX], slave=UNIT)
+        client.write_registers(20, [4, 25, RPM_MAX, 0, 0, 0], slave=UNIT)
     except Exception as err:
         print("[error] Can't init the Modbus coils")
         print(f"[error] {err}")
@@ -186,6 +191,7 @@ def loop_process():
                 registers[10] = 0  # mechanical power
                 registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
+                client.write_registers(address=25, values=[0], slave=UNIT)
                 continue
             # wind speed too slow/quick
             if speed < speed_min or speed > speed_max:
@@ -198,6 +204,7 @@ def loop_process():
                 registers[10] = 0  # mechanical power
                 registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
+                client.write_registers(address=25, values=[1], slave=UNIT)
                 continue
             # rotor speed too high
             if rotor_speed > max_rotor_speed:
@@ -210,6 +217,7 @@ def loop_process():
                 registers[10] = 0  # mechanical power
                 registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
+                client.write_registers(address=25, values=[2], slave=UNIT)
                 continue
 
             # unwanted case
@@ -226,6 +234,7 @@ def loop_process():
                 registers[10] = 0  # mechanical power
                 registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
+                client.write_registers(address=25, values=[0], slave=UNIT)
                 continue
 
             # unwanted case
@@ -242,6 +251,7 @@ def loop_process():
                 registers[10] = 0  # mechanical power
                 registers[11] = 0  # electrical power
                 client.write_registers(address=0, values=registers, slave=UNIT)
+                client.write_registers(address=25, values=[0], slave=UNIT)
                 continue
 
             # otherwise, running
@@ -251,6 +261,7 @@ def loop_process():
 
             client.write_coils(address=0, values=coils, slave=UNIT)
             client.write_registers(address=0, values=registers, slave=UNIT)
+            client.write_registers(address=25, values=[0], slave=UNIT)
 
         except Exception as err:
             print(f"[ERROR] {err}")

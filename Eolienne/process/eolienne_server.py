@@ -3,7 +3,7 @@
 __author__ = "haxom"
 __email__ = "haxom@haxom.net"
 __file__ = "eolienne_server.py"
-__version__ = "1.3"
+__version__ = "1.4"
 
 import signal
 import sys
@@ -51,7 +51,7 @@ async def init():
     identity.VendorUrl = "https://github.com/haxom/simics/"
     identity.ProductName = "SIMU-TURBOELEC-EOLIENNE"
     identity.ModelName = "EOLIENNE"
-    identity.MajorMinorRevision = "1.3.0"
+    identity.MajorMinorRevision = "1.4.0"
 
     await asyncio.gather(
         check_broken_eolienne(context),
