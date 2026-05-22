@@ -142,7 +142,7 @@
 		function updateRegisters()
 		{
 			document.getElementById('input_pitch_angle').value = registers[0] + " °";
-			document.getElementById('input_wind_speed').value = registers[1] + " m/s";
+			document.getElementById('input_wind_speed').value = registers[1]/100 + " m/s";
 			document.getElementById('input_rotor_speed').value = registers[2] + " RPM (" + Math.round((registers[2] / limit_value_registers[2]) * 100) + " %)";
 			document.getElementById('input_yaw_position').value = registers[3] + " °";
 			//document.getElementById('input_temperature').value = registers[4] + " °C";
