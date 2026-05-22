@@ -1,7 +1,7 @@
 # Instance Docker
 
 ## Construction
-1. Se déplacer dans le dossier $git_simics$/Portail/
+1. Se déplacer dans le dossier `git_simics/Portail/`
 2. Executer
 ```
 $ docker build -t simics_portail .
