@@ -1,10 +1,9 @@
 # Instance Docker
 
 ## Configuration
-Le mot de passe du compte "operator" ("operator" par défaut) peut être configuré dans le fichier Dockerfile, à la ligne :
-```
-RUN echo SetEnv OPERATOR_PWD operator >> /etc/apache2/conf-enabled/environment.conf
-```
+Les mots de passe sont configurable dans le fichier Dockerfile :
+- mot de passe du compte operateur sur l'IHM (operator par défaut)
+- mot de passe d'accès à l'automate Siemens (maint01 par défaut)
 
 ## Construction
 1. Se déplacer dans le dossier `git_simics/Eolienne/`
@@ -33,19 +32,20 @@ cmd> docker inspect --format='{{.NetworkSettings.IPAddress}}' %DOCKER_ID%
 
 ```
 $ nmap -n -p- --script=modbus-discover <EOLIENNE_IP>
-Starting Nmap 7.93 ( https://nmap.org ) at 2025-03-07 09:44 CET
+Starting Nmap 7.95 ( https://nmap.org ) at 2026-10-15 16:09 CEST
 Nmap scan report for A.B.C.D
-Host is up (0.000063s latency).
-Not shown: 65533 closed tcp ports (conn-refused)
+Host is up (0.000090s latency).
+Not shown: 65532 closed tcp ports (conn-refused)
 PORT    STATE SERVICE
 80/tcp  open  http
+102/tcp open  iso-tsap
 502/tcp open  modbus
 | modbus-discover: 
 |   sid 0x42: 
-|     Slave ID data: HAXOM-SIMU-TURBOELEC-1.3.0\xFF
-|_    Device identification: HAXOM SIMU-TURBOELEC 1.3.0
+|     Slave ID data: HAXOM-SIMU-TURBOELEC-1.5.0\xFF
+|_    Device identification: HAXOM SIMU-TURBOELEC 1.5.0
 
-Nmap done: 1 IP address (1 host up) scanned in 1.03 seconds
+Nmap done: 1 IP address (1 host up) scanned in 1.42 seconds
 ```
 
 - IHM de supervision web [http://<EOLIENNE_IP/](http://<EOLIENNE_IP/) (**l'accès est en HTTP et non HTTPS**)
