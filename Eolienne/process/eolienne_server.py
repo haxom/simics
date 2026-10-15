@@ -8,7 +8,6 @@ __version__ = "1.5"
 import signal
 import sys
 import asyncio
-from pathlib import Path
 from random import randint
 import math
 
