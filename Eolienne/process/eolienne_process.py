@@ -106,6 +106,11 @@ def loop_process():
                 device_id=UNIT
             ).bits[0]
 
+            # Les lectures ont réussi : on repart de zéro pour le compteur
+            # d'erreurs (sinon, 5 erreurs ponctuelles sur toute la vie du
+            # process finiraient par le tuer)
+            err_count = 0
+
             # broken
             if broken:
                 print("[broken eolienne]")

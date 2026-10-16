@@ -6,7 +6,8 @@ Fait le pont entre l'IHM web (PHP) et le serveur S7comm.
 
 L'API n'écrit que l'octet 0 de DB1 (commandes) pour ne jamais écraser les
 capteurs/position tenus par le simulateur. Elle s'authentifie auprès de
-l'automate (mot de passe S7).
+l'automate (mot de passe S7, défini avec le schéma de la DB1 dans
+``elevator_common.py``).
 """
 __author__ = "haxom"
 __email__ = "haxom@haxom.net"
@@ -14,57 +15,19 @@ __file__ = "ascenseur_api.py"
 __version__ = "3.0"
 
 import json
-import os
-import struct
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from snap7.client import Client
 
-# ======================================================================
-# Mot de passe S7comm (commun aux process -> à garder synchronisé)
-# ======================================================================
-S7_PASSWORD = os.environ.get("S7_PASSWORD", "maint01")
-
-# ======================================================================
-# Schéma de la DB1 (commun aux process -> à garder synchronisé)
-# ======================================================================
-DB1_SIZE = 10
-
-# Zones d'écriture (pour éviter tout recouvrement entre processus)
-CMD_BYTE = 0        # octet des commandes (API / interlock)
-SENSOR_BYTE = 1     # premier octet des capteurs (simulateur)
-ALARM_BYTE = 9      # octet d'alarme (interlock)
-
-# --- Bits de commande (octet 0) ---
-DB1_MOTOR_UP = 2
-DB1_MOTOR_DOWN = 3
-
-# --- Bits capteurs (octet 1) ---
-DB1_POS_HIGH = 0
-DB1_POS_LOW = 1
-DB1_DOOR_CLOSED = 2
-
-# --- Registres / octet d'état ---
-DB1_POSITION = 2    # mot (2 octets)
-DB1_SPEED = 4       # mot (2 octets)
-DB1_STATE = 8       # octet
-
-# --- Bit d'alarme (octet ALARM_BYTE) ---
-DB1_NACELLE_BROKEN = 0
-
-
-def get_bool(data, byte_offset, bit_offset):
-    return bool(data[byte_offset] & (1 << bit_offset))
-
-
-def set_bool(data, byte_offset, bit_offset, value):
-    if value:
-        data[byte_offset] |= (1 << bit_offset)
-    else:
-        data[byte_offset] &= ~(1 << bit_offset)
-
-
-def get_int(data, offset):
-    return struct.unpack('>h', data[offset:offset + 2])[0]
+from elevator_common import (
+    S7_PASSWORD,
+    DB1_SIZE,
+    CMD_BYTE, SENSOR_BYTE, ALARM_BYTE,
+    DB1_MOTOR_UP, DB1_MOTOR_DOWN,
+    DB1_POS_HIGH, DB1_POS_LOW, DB1_DOOR_CLOSED,
+    DB1_POSITION, DB1_SPEED, DB1_STATE,
+    DB1_NACELLE_BROKEN,
+    get_bool, set_bool, get_int,
+)
 
 
 S7_HOST = "127.0.0.1"

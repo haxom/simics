@@ -200,7 +200,17 @@ async def update_physical_routine(context):
     broken = False
 
     while not broken:
-        speed = int(open(WIND_SPEED_FILE, "r").read())  # cm/s
+        # Lecture de la vitesse du vent (cm/s), écrite dans /tmp/wind.txt par
+        # wind.py. Si le fichier n'existe pas encore (démarrage) ou contient
+        # une valeur invalide, on retente la seconde suivante sans crasher.
+        try:
+            with open(WIND_SPEED_FILE) as wind_file:
+                speed = int(wind_file.read())  # cm/s
+        except (FileNotFoundError, ValueError) as err:
+            print(f"[warn] can't read wind speed ({err}), retrying in 1s")
+            await asyncio.sleep(1)
+            continue
+
         pitch = randint(10, 20)
         yaw = randint(1, 2)
         rotor_speed = rpm(speed/100, yaw, pitch, RPM_MAX)

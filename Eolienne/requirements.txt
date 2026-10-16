@@ -1,0 +1,3 @@
+# Dépendances Python de la simulation (installées dans le venv /data/venv)
+pymodbus==3.12.1
+python-snap7==3.2.1

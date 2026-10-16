@@ -10,7 +10,8 @@ Fait le pont entre le Modbus (éolienne) et le S7comm (ascenseur) :
   - en mode maintenance, le processus ne touche pas à DB1 pour ne pas
     écraser les commandes envoyées par l'API.
 
-Le processus s'authentifie auprès de l'automate (mot de passe S7) pour
+Le processus s'authentifie auprès de l'automate (mot de passe S7, défini
+avec le schéma de la DB1 dans ``elevator_common.py``) pour
 pouvoir lire/écrire DB1.
 """
 __author__ = "haxom"
@@ -18,53 +19,21 @@ __email__ = "haxom@haxom.net"
 __file__ = "ascenseur_process.py"
 __version__ = "3.0"
 
-import os
 import signal
 import sys
-import struct
 import time
 from pymodbus.client import ModbusTcpClient
 from snap7.client import Client
 
-# ======================================================================
-# Mot de passe S7comm (commun aux process -> à garder synchronisé)
-# ======================================================================
-S7_PASSWORD = os.environ.get("S7_PASSWORD", "maint01")
-
-# ======================================================================
-# Schéma de la DB1 (commun aux process -> à garder synchronisé)
-# ======================================================================
-DB1_SIZE = 10
-
-# Zones d'écriture (pour éviter tout recouvrement entre processus)
-CMD_BYTE = 0        # octet des commandes (API / interlock)
-SENSOR_BYTE = 1     # premier octet des capteurs (simulateur)
-ALARM_BYTE = 9      # octet d'alarme (interlock)
-
-# --- Bits de commande (octet 0) ---
-DB1_MOTOR_UP = 2
-DB1_MOTOR_DOWN = 3
-
-# --- Registres / octet d'état ---
-DB1_POSITION = 2    # mot (2 octets)
-
-# --- Bit d'alarme (octet ALARM_BYTE) ---
-DB1_NACELLE_BROKEN = 0
-
-
-def get_bool(data, byte_offset, bit_offset):
-    return bool(data[byte_offset] & (1 << bit_offset))
-
-
-def set_bool(data, byte_offset, bit_offset, value):
-    if value:
-        data[byte_offset] |= (1 << bit_offset)
-    else:
-        data[byte_offset] &= ~(1 << bit_offset)
-
-
-def get_int(data, offset):
-    return struct.unpack('>h', data[offset:offset + 2])[0]
+from elevator_common import (
+    S7_PASSWORD,
+    DB1_SIZE,
+    CMD_BYTE, SENSOR_BYTE, ALARM_BYTE,
+    DB1_MOTOR_UP, DB1_MOTOR_DOWN,
+    DB1_POSITION,
+    DB1_NACELLE_BROKEN,
+    get_bool, set_bool, get_int,
+)
 
 
 def nacelle_should_break(running, position):
