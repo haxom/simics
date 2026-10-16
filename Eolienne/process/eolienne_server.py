@@ -10,11 +10,17 @@ import sys
 import asyncio
 from random import randint
 import math
+import traceback
 
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import (ModbusSequentialDataBlock, ModbusServerContext,
                                 ModbusDeviceContext)
+from pymodbus.exceptions import NoSuchIdException
+from pymodbus.logging import Log
+from pymodbus.pdu import ExceptionResponse
 from pymodbus.pdu.device import ModbusDeviceIdentification
-from pymodbus.server import StartAsyncTcpServer
+from pymodbus.server import ModbusTcpServer
+from pymodbus.server.requesthandler import ServerRequestHandler
 
 # Params
 listen_int = "0.0.0.0"
@@ -138,13 +144,55 @@ async def init():
     )
 
 
+class EolienneRequestHandler(ServerRequestHandler):
+    """Valide l'Unit Identifier avant de traiter chaque requête.
+
+    Depuis pymodbus 3.12 la validation est faite dans chaque PDU, et certains
+    (0x11 Report Device Id, 0x2B Read Device Identification, diagnostics...)
+    l'ignorent : le serveur répondait alors à n'importe quel unit id, ce qui
+    cassait le brute-force de ``nmap modbus-discover``. On la refait globalement
+    ici. L'unité 0 (broadcast) est un alias de l'automate, et une unité inconnue
+    reçoit une erreur immédiate (code fonction 0x80) que les scanners ignorent,
+    donc sans timeout.
+    """
+
+    async def handle_request(self):
+        if not self.last_pdu:
+            return
+        try:
+            # L'unité 0 est un alias de UNIT (ne pas l'ajouter au contexte : son
+            # repli "catch-all" ferait répondre le serveur à TOUS les unit id).
+            target = UNIT if self.last_pdu.dev_id == 0 else self.last_pdu.dev_id
+            self.server.context[target]  # NoSuchIdException si unit id inconnu
+            response = await self.last_pdu.datastore_update(self.server.context, target)
+        except NoSuchIdException:
+            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
+            response = ExceptionResponse(0x00, ExcCodes.GATEWAY_NO_RESPONSE)
+        except Exception as exc:  # pylint: disable=broad-except
+            Log.error("Datastore unable to fulfill request: {}; {}", exc, traceback.format_exc())
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE)
+
+        response.transaction_id = self.last_pdu.transaction_id
+        response.dev_id = self.last_pdu.dev_id
+        self.server_send(response, self.last_addr)
+
+
+class EolienneTcpServer(ModbusTcpServer):
+    """Serveur Modbus TCP utilisant :class:`EolienneRequestHandler`."""
+
+    def callback_new_connection(self):
+        return EolienneRequestHandler(
+            self, self.trace_packet, self.trace_pdu, self.trace_connect
+        )
+
+
 async def run_server(context, identity, address):
     print(f"Modbus slave launched on {address}")
-    await StartAsyncTcpServer(
+    await EolienneTcpServer(
         context=context,
         identity=identity,
         address=address,
-    )
+    ).serve_forever()
 
 
 async def update_physical_routine(context):
