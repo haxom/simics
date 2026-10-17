@@ -66,7 +66,11 @@ def loop_process():
     err_count = 0
 
     while True:
-        sleep(1)
+        # Cadence de commande 5 Hz (0,2 s au lieu de 1 s) : l'IHM étant
+        # un simple client, c'est CE cycle qui fixe la latence bouton ->
+        # mouvement (le verrou M_UP/M_DOWN et les équations, elles, ne
+        # changent pas). Aucune logique métier modifiée.
+        sleep(0.2)
         try:
             client = ModbusTcpClient(
                 host=modbus_server_ip,
@@ -148,8 +152,11 @@ def loop_process():
         except Exception as err:
             print(f"[error] {err}")
             err_count += 1
-            if err_count == 5:
-                print("[error] 5 errors happened in the process ! exiting...")
+            # 25 erreurs consécutives = ~5 s d'indisponibilité Modbus à
+            # 5 Hz (le vieux seuil « 5 » correspondait à 5 s @ 1 Hz) ;
+            # en dessous, supervisord a le temps de remonter le serveur.
+            if err_count >= 25:
+                print("[error] 25 errors happened in the process ! exiting...")
                 sys.exit(1)
 
 

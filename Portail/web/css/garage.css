@@ -1,42 +1,255 @@
-td.code {
-	text-align: right;
+/* SCADA - Portail : habillage maison, thème clair.
+   Sans changement de mécanique : #div_gap garde la règle
+   height = DOOR_H - (DOOR_H/100)*GAP cohérente avec index.php (309px). */
+
+* { box-sizing: border-box; }
+
+body {
+	background: #f2f4f7;
+	color: #1b2027;
+	margin: 0;
+	font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 14px;
 }
 
-td.input {
-	color: green;
+/* --- barre de titre -------------------------------------------------- */
+.topbar {
+	background: #ffffff;
+	border-bottom: 1px solid #d7dbe2;
+	padding: 10px 18px;
+	font-weight: 600;
+	letter-spacing: .4px;
+	color: #1b2027;
+	box-shadow: 0 1px 2px rgba(0,0,0,.04);
+}
+.topbar .sub {
+	color: #79808d;
+	font-weight: 400;
+	font-size: 12px;
+	margin-left: 10px;
 }
 
-td.output {
-	color: red;
+/* --- mise en page ---------------------------------------------------- */
+.layout {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	align-items: flex-start;
+	justify-content: center;
+	padding: 22px;
+	max-width: 1080px;
+	margin: 0 auto;
+}
+.panel {
+	background: #ffffff;
+	border: 1px solid #d7dbe2;
+	border-radius: 10px;
+	padding: 14px 16px;
+	box-shadow: 0 1px 3px rgba(20,25,35,.06);
 }
 
-td.io {
-	color: blue;
+/* --- visuel du portail (scène) --------------------------------------- */
+.scene { padding: 12px 14px; }
+.scene-top, .scene-bottom, .scene-mid {
+	display: grid;
+	grid-template-columns: 70px 1fr 70px;  /* LED+capteur (60px) tiennent sans déborder */
+	align-items: center;
+}
+.scene-mid  {
+	align-items: start;
+	justify-items: center;
+}
+.scene-top{ margin-bottom: 4px; }
+.scene-bottom{ margin-top: 4px; }
+.sensor { white-space: nowrap; }
+
+.door-cell {
+	width: 560px;                    /* ratio exact de batmobile.jpg (450x248) :
+	                                    voiture plein cadre, zéro bande */
+	height: 309px;                   /* = DOOR_H de index.php (560/450*248) */
+	position: relative;
+	overflow: hidden;
+	border: 1px solid #c6ccd6;
+	border-radius: 4px;
+	background: #0e1216 url('../batmobile.jpg') no-repeat center center;
+	background-size: contain;        /* aspect identique à la cellule : jamais visible */
+}
+#div_gap {
+	position: absolute;
+	top: 0; left: 0; right: 0;
+	height: 309px;                      /* mis à jour en JS : DOOR_H - DOOR_H/100*GAP */
+	background: url('../portail.jpg') no-repeat bottom center;
+	/* texture à proportion naturelle, fixée au bord INFÉRIEUR de la
+	   porte : en s'ouvrant, la texture glisse vers le haut sans jamais
+	   s'écraser (plus de distorsion aux extrémités) */
+	background-size: 100% auto;
+	transition: height .45s ease-out;   /* le pas de 5 % glisse au lieu de sauter */
+}
+.arrows {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;      /* recadrage vertical automatique */
+	gap: 6px;
+}
+.arrows img { margin-left: 10px; }
+.scene .led img { vertical-align: middle; }
+
+/* --- état, commandes -------------------------------------------------- */
+#state {
+	display: inline-block;
+	padding: 7px 14px;
+	border-radius: 6px;
+	font-weight: 600;
+	letter-spacing: .5px;
+	margin-bottom: 12px;
+	border: 1px solid transparent;
+}
+.st_boom    { background: #fbe5e3; color: #b3221c; border-color: #e5a8a4; }
+.st_error   { background: #fdeeda; color: #a05e0e; border-color: #eccf9e; }
+.st_moving  { background: #e3effb; color: #14639c; border-color: #aac8e4; }
+.st_open    { background: #e2f5e8; color: #1c7a3a; border-color: #a8d8b8; }
+.st_closed  { background: #eceef1; color: #4d5563; border-color: #cfd4db; }
+.st_stopped { background: #fcf3dc; color: #8a6d1c; border-color: #e4d29a; }
+
+.boom {
+	background: #fbe5e3;
+	color: #b3221c;
+	border: 1px solid #e5a8a4;
+	border-radius: 8px;
+	padding: 8px 12px;
+	margin-bottom: 12px;
+	font-size: 13px;
 }
 
-table.door {
-	border: 0px solid green;
-	margin-top:100px;
-	margin-left:auto;
-	margin-right:auto;
+.ctl {
+	display: flex;
+	flex-direction: row;             /* une seule rangée : panneau 3x moins haut */
+	gap: 7px;
+	width: 100%;
+}
+.ctl .big {
+	flex: 1;
+	padding: 10px 4px;
+	border: 1px solid #c6ccd6;
+	border-radius: 8px;
+	background: #eceef1;
+	color: #1b2027;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background .12s, transform .05s;
+}
+.ctl .big:hover:not(:disabled) { background: #e0e4ea; }
+.ctl .big:active:not(:disabled){ transform: scale(.98); }
+.ctl .big:disabled {
+	opacity: .45;
+	cursor: not-allowed;
+}
+.ctl .up   { border-color: #a8d8b8; background: #e2f5e8; }
+.ctl .down { border-color: #e5c9a4; background: #fdf0e0; }
+.ctl .stop { border-color: #e5a8a4; background: #fbe5e3; }
+.ctl .up:hover:not(:disabled)   { background: #d3eedd; }
+.ctl .down:hover:not(:disabled) { background: #f7e4cb; }
+.ctl .stop:hover:not(:disabled) { background: #f6d7d4; }
+
+/* jauge d'ouverture */
+.bar {
+	height: 12px;
+	background: #e4e8ee;
+	border: 1px solid #c6ccd6;
+	border-radius: 6px;
+	margin-top: 14px;
+	width: 100%;
+	overflow: hidden;
+}
+#bar_fill {
+	height: 100%;
+	background: linear-gradient(90deg, #2f9e5f, #1c7a3a);
+	transition: width .45s ease-out;
+}
+.legend {
+	margin-top: 5px;
+	color: #79808d;
+	font-size: 12px;
+	width: 100%;
 }
 
-div.registers, div.processes {
-	min-width: 200px;
-	max-width: 50%;
-	margin-left: auto;
-	margin-right: auto;
-} 
+/* bouton « réinitialiser » : volontairement discret */
+.resetrow { margin-top: 14px; text-align: right; }
+button.ghost {
+	background: none;
+	border: none;
+	color: #79808d;
+	font-size: 11.5px;
+	cursor: pointer;
+	padding: 3px 6px;
+	border-radius: 5px;
+}
+button.ghost:hover { color: #a05e0e; background: #eceef1; }
 
+/* --- colonne droite : commandes + registres --------------------------- */
+.side {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	width: 280px;
+	flex-shrink: 0;
+}
+.side .dbg { width: 100%; margin: 0; max-width: none; }
+.side .registers { width: 100%; }
+
+.dbg h3 {
+	margin: 2px 0 10px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #79808d;
+	letter-spacing: .4px;
+}
+
+/* --- process (spoiler), SOUS tout, sur la largeur ---------------------- */
+.bottom-row { display: flex; justify-content: center; padding: 0 22px 30px; }
+details.proc {
+	width: 100%;
+	max-width: 860px;
+	color: #1b2027;
+}
+details.proc summary {
+	cursor: pointer;
+	color: #79808d;
+	padding: 2px 6px 10px;
+}
+details.proc summary:hover { color: #1b2027; }
+
+/* --- tables registres / process --------------------------------------- */
 table.registers, table.processes {
-	border: 1px solid #aaaaaa; 
-	border-collapse: collapse; 
-	margin-left:auto, margin-right:auto;
-	background-color: #efefef;
+	border: 1px solid #d7dbe2;
+	border-collapse: collapse;
+	background: #f7f8fa;
 }
-
-table.registers td, table.registers th, table.processes td, table.processes th {
-	padding-left: 1ex;
-	padding-right: 1ex;
+table.registers td, table.registers th,
+table.processes td, table.processes th {
+	padding: 3px 10px;
+	border: 1px solid #d7dbe2;
 }
+table.registers th, table.processes th {
+	background: #eceef1;
+	color: #1b2027;
+	text-align: left;
+}
+td.code { text-align: right; color: #79808d; font-family: monospace; }
+td.input  { color: #1c7a3a; }
+td.output { color: #b3221c; }
+td.io     { color: #14639c; }
 
+.registers input {
+	background: #ffffff;
+	color: #1b2027;
+	border: 1px solid #c6ccd6;
+	border-radius: 4px;
+	padding: 2px 6px;
+	width: 52px;
+	text-align: center;
+	font-family: monospace;
+}
+.processes td { font-family: monospace; font-size: 12px; color: #4d5563; }
