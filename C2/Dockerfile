@@ -4,7 +4,8 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install python3
 
 # Mot de passe de la mire web formateur (vue http://<C2>:4444/).
 # Override au build : docker build --build-arg C2_PASSWORD=... .
-# Override à l'exécution : environment: du docker-compose racine.
+# Override au runtime : C2_PASSWORD dans le .env du lab (le compose
+# passe la variable au conteneur, elle prime sur la valeur de l'image).
 ARG C2_PASSWORD=Ev1l_W3atherSyn4c
 ENV C2_PASSWORD=${C2_PASSWORD}
 

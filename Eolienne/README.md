@@ -112,6 +112,7 @@ Variables d'environnement utiles au formateur :
 | `EOL_BEACON_MIN` / `EOL_BEACON_MAX` | `25` / `45` | intervalle (s) du beacon |
 | `EOL_SCAN_INTERVAL` | `90` | périodicité (s) du balayage Modbus |
 | `EOL_MAL_ENABLED` | `1` | `0` désactive le malware (démo hors exercice) |
+| `S7_PASSWORD` | `maint01` | mot de passe S7comm de l'ascenseur — overridable dans le `.env` du lab (il prime sur la valeur du Dockerfile, `env_file` du compose) ou du Dockerfile |
 
 > Accès direct à l'API depuis un shell dans le conteneur :
 > `curl -s http://127.0.0.1:8081/api/rules` (GET), les autres

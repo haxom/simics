@@ -50,9 +50,10 @@ Mot de passe par défaut : **`Ev1l_W3atherSyn4c`** (nom d'« outil
 attaquant », clin d'œil au camouflage `weather_sync` du malware). Pour
 le changer :
 
-- au build : `docker build --build-arg C2_PASSWORD=... -t turboelec_c2 .`
-- à l'exécution : `environment: C2_PASSWORD: ...` sur le service `c2`
-  du docker-compose racine (prioritaire sur la valeur de l'image) ;
+- au runtime : `C2_PASSWORD=...` dans le `.env` du lab (le
+  docker-compose passe la variable au conteneur, elle prime sur
+  l'image) — c'est ce que le MOTD du serveur affiche ;
+- au build : `docker build --build-arg C2_PASSWORD=... -t turboelec_c2 .`;
 - dans le code : `C2_PASSWORD` en tête de `c2_server.py` (run hors Docker).
 
 Le `POST /beacon` n'est pas authentifié : le malware ne doit pas connaître
