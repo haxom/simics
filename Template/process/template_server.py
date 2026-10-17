@@ -1,30 +1,43 @@
 #!/usr/bin/env python
 # coding=utf8
+"""
+Template de serveur Modbus TCP des simulations.
+
+Porté à l'API pymodbus 3.x (comme eolienne_server.py) : ModbusDeviceContext,
+ModbusTcpServer asyncio, et la même validation globale de l'Unit Identifier
+(sous-classe ServerRequestHandler). Depuis pymodbus 3.12 la validation est
+faite dans chaque PDU, et certains (0x11 Report Device Id, 0x2B Read Device
+Identification, diagnostics...) l'ignorent : le serveur répondrait alors à
+n'importe quel unit id, ce qui casse le brute-force de ``nmap
+modbus-discover``. On la refait globalement ici. L'unité 0 (broadcast) est
+un alias de l'automate, et une unité inconnue reçoit une erreur immédiate
+(code fonction 0x80) que les scanners ignorent, donc sans timeout.
+"""
 __author__ = "haxom"
 __email__ = "haxom@haxom.net"
 __file__ = "template_server.py"
-__version__ = "1.5"
+__version__ = "1.6"
 
+import asyncio
 import signal
-# System
 import sys
+import traceback
 
+# System
+from pymodbus.constants import ExcCodes
 from pymodbus.datastore import (ModbusSequentialDataBlock, ModbusServerContext,
                                 ModbusDeviceContext)
 from pymodbus.pdu.device import ModbusDeviceIdentification
-# pymodbus
-from pymodbus.server import StartTcpServer
+from pymodbus.exceptions import NoSuchIdException
+from pymodbus.logging import Log
+from pymodbus.pdu import ExceptionResponse
+from pymodbus.server import ModbusTcpServer
+from pymodbus.server.requesthandler import ServerRequestHandler
 
 # Params
 listen_int = "0.0.0.0"
 listen_port = 502
 UNIT = 0x42
-
-# PyModbus function codes
-FC_DI = 2
-FC_CO = 1
-FC_IR = 4
-FC_HO = 3
 
 
 def signal_handler(sig, frame):
@@ -35,7 +48,44 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-def init():
+class TemplateRequestHandler(ServerRequestHandler):
+    """Valide l'Unit Identifier avant de traiter chaque requête.
+
+    Cf. docstring du module : l'unité 0 est un alias de UNIT (ne pas
+    l'ajouter au contexte : son repli "catch-all" ferait répondre le
+    serveur à TOUS les unit id), une unité inconnue reçoit une erreur
+    immédiate sans timeout.
+    """
+
+    async def handle_request(self):
+        if not self.last_pdu:
+            return
+        try:
+            target = UNIT if self.last_pdu.dev_id == 0 else self.last_pdu.dev_id
+            self.server.context[target]  # NoSuchIdException si unit id inconnu
+            response = await self.last_pdu.datastore_update(self.server.context, target)
+        except NoSuchIdException:
+            Log.error("requested device id does not exist: {}", self.last_pdu.dev_id)
+            response = ExceptionResponse(0x00, ExcCodes.GATEWAY_NO_RESPONSE)
+        except Exception as exc:  # pylint: disable=broad-except
+            Log.error("Datastore unable to fulfill request: {}; {}", exc, traceback.format_exc())
+            response = ExceptionResponse(self.last_pdu.function_code, ExcCodes.DEVICE_FAILURE)
+
+        response.transaction_id = self.last_pdu.transaction_id
+        response.dev_id = self.last_pdu.dev_id
+        self.server_send(response, self.last_addr)
+
+
+class TemplateTcpServer(ModbusTcpServer):
+    """Serveur Modbus TCP utilisant :class:`TemplateRequestHandler`."""
+
+    def callback_new_connection(self):
+        return TemplateRequestHandler(
+            self, self.trace_packet, self.trace_pdu, self.trace_connect
+        )
+
+
+async def init():
     devices = {
         UNIT: ModbusDeviceContext(
             di=ModbusSequentialDataBlock(0, [17]*100),
@@ -52,19 +102,23 @@ def init():
     identity.VendorUrl = "https://github.com/haxom/"
     identity.ProductName = "SIMU-ICS"
     identity.ModelName = "TEMPLATE"
-    identity.MajorMinorRevision = "1.5.0"
+    identity.MajorMinorRevision = "1.6.0"
 
-    print(f"Modbus slave launched on {listen_int}:{listen_port}")
-    StartTcpServer(
+    await run_server(context, identity, (listen_int, listen_port))
+
+
+async def run_server(context, identity, address):
+    print(f"Modbus slave launched on {address}")
+    await TemplateTcpServer(
         context=context,
         identity=identity,
-        address=(listen_int, listen_port)
-    )
+        address=address,
+    ).serve_forever()
 
 
 if __name__ == "__main__":
     try:
-        init()
+        asyncio.run(init())
     except Exception as err:
         print("[error] Can't init Modbus server ...")
         print(f"[error] {err}")
