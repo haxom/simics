@@ -77,8 +77,10 @@ Deux services supplémentaires orientent l'exercice de détection/défense :
   25–45 s et balaie en Modbus lecture seule les autres éoliennes toutes
   les 90 s. Les beacons identifient la turbine par son nom de parc DNS
   (`turboelec-eolienne-N`, résolu au démarrage) et non par l'ID de
-  conteneur. Détectable par la capture réseau de la page pare-feu, ou à
-  la main par `tcpdump` / `ss` dans le conteneur.
+  conteneur ; le beacon de scan part à chaque cycle, même vide
+  (signal « balayage bloqué » au C2). Détectable par la capture réseau
+  de la page pare-feu, ou à la main par `tcpdump` / `ss` dans le
+  conteneur.
 - **`firewall_api`** (`process/firewall_api.py`) : micro-API
   (loopback 8081) réservée aux chaînes iptables dédiées
   `TURBOELEC_IN` / `TURBOELEC_OUT`, relayée par la page web

@@ -70,7 +70,7 @@ def log_beacon(source_ip, payload, registry):
 
 # --- Registre en mémoire (réhydraté depuis le JSONL au démarrage) ---------
 
-def update_registry(source_ip, payload, registry):
+def update_registry(source_ip, payload, registry, ts=None):
     """
     Mise à jour du suivi : une ligne par éolienne.
 
@@ -78,8 +78,11 @@ def update_registry(source_ip, payload, registry):
     l'IP source (beacons malformés). Même si toutes les connexions partagent
     une même IP de sortie (bridge QubesOS, NAT...), chaque éolienne garde
     sa ligne : compteur, last/first et état 🟢/🔴 par turbine.
+
+    ts : horodatage (epoch) de l'échantillon. None = maintenant ; le replay
+    du journal au démarrage passe l'heure d'origine du beacon.
     """
-    now = time.time()
+    now = ts if ts is not None else time.time()
     if isinstance(payload, dict) and payload.get("host"):
         key = str(payload["host"])
         hostname = key
@@ -88,7 +91,7 @@ def update_registry(source_ip, payload, registry):
         hostname = "?"
     slot = registry.setdefault(key, {
         "hostname": hostname, "ip": source_ip, "first": now,
-        "last": now, "count": 0, "peers": [],
+        "last": now, "count": 0, "peers": [], "scan_state": "none",
     })
     if isinstance(payload, dict) and payload.get("host"):
         slot["hostname"] = hostname
@@ -96,11 +99,22 @@ def update_registry(source_ip, payload, registry):
     slot["last"] = now
     slot["count"] += 1
     if isinstance(payload, dict) and isinstance(payload.get("peers"), dict):
-        # mouvement latéral : résumé du dernier balayage inter-éoliennes
+        # mouvement latéral : état du dernier balayage inter-éoliennes.
+        # peers vide = l'agent ne voit plus personne (blocage sortant 502) :
+        # matérialisation formateur de l'efficacité du pare-feu.
         slot["peers"] = [
             f"{peer} ({data.get('ip', '?')})"
             for peer, data in sorted(payload["peers"].items())
         ]
+        slot["scan_state"] = "ok" if slot["peers"] else "blocked"
+
+
+def parse_epoch(text):
+    """Epoch d'une heure « 2026-10-17 09:41:02 » du journal. None si invalide."""
+    try:
+        return time.mktime(time.strptime(text, "%Y-%m-%d %H:%M:%S"))
+    except (TypeError, ValueError):
+        return None
 
 
 def load_registry(path):
@@ -115,6 +129,7 @@ def load_registry(path):
                         entry.get("src_ip", "?"),
                         entry.get("payload", {}),
                         registry,
+                        parse_epoch(entry.get("time")),
                     )
                 except (ValueError, TypeError):
                     continue
@@ -167,11 +182,13 @@ def render_dashboard(registry):
             else '<span class="ko">🔴 silencieux</span>'
         )
         peers = slot["peers"]
-        peers_cell = (
-            "<br />".join(html.escape(peer) for peer in peers)
-            if peers
-            else '<span class="muted">—</span>'
-        )
+        scan_state = slot.get("scan_state", "none")
+        if scan_state == "blocked":
+            peers_cell = '<span class="ko">🔒 aucun peer</span>'
+        elif scan_state == "ok":
+            peers_cell = "<br />".join(html.escape(peer) for peer in peers)
+        else:
+            peers_cell = '<span class="muted">—</span>'
         rows += f"""<tr>
 <td>{html.escape(str(slot["ip"]))}</td>
 <td>{html.escape(slot["hostname"])}</td>
@@ -194,7 +211,8 @@ def render_dashboard(registry):
 {rows}
 </table>
 <p class="muted">🟢 actif : beacon &lt; {SILENCE_THRESHOLD} s ;
-🔴 silencieux : au-delà — validation de l'exercice défensif.</p>
+🔴 silencieux : au-delà. « Dernier scan peers » : — jamais de scan,
+liste des voisins vus, ou 🔒 aucun peer.</p>
 </body></html>"""
 
 

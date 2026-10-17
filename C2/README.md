@@ -26,6 +26,10 @@ Vue web formateur (mire mot de passe, auto-refresh 10 s) :
 http://<C2_IP>:4444/
 ```
 
+Malware côté éolienne : le beacon de scan part à chaque cycle (90 s),
+même si aucun peer n'a répondu — un `peers` vide est le signal explicite
+« le balayage est bloqué » au C2.
+
 La table donne une ligne par éolienne (clef = hostname exfiltré, repli
 sur l'IP source pour les beacons sans payload exploitable) : hostname,
 dernière IP source vue, premier/dernier beacon, nombre de beacons,
@@ -34,6 +38,13 @@ latéral) et état — 🟢 actif (beacon < 60 s) / 🔴 silencieux : l'absence
 de nouveau beacon pour une éolienne donnée valide le blocage par son
 pare-feu local, même si toutes les connexions partagent une même IP de
 sortie (bridge QubesOS, NAT...).
+
+Colonne « Dernier scan peers » :
+- `—` : aucun balayage reçu pour cette éolienne ;
+- liste : voisins vus au dernier balayage (trafic sortant 502 OK) ;
+- 🔒 « aucun peer détecté — blocage sortant 502 ? » : le dernier
+  balayage n'a vu personne — validation immédiate de l'efficacité du
+  blocage Modbus par le stagiaire, sans attendre l'analyse PCAP.
 
 Mot de passe par défaut : **`Ev1l_W3atherSyn4c`** (nom d'« outil
 attaquant », clin d'œil au camouflage `weather_sync` du malware). Pour
