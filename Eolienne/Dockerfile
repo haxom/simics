@@ -1,7 +1,7 @@
 FROM debian:trixie
 ENV TERM linux
 RUN apt-get update && apt-get -y upgrade && apt-get -y install dialog apt-utils
-RUN apt-get -y install python3 python3-venv apache2 php libapache2-mod-php supervisor
+RUN apt-get -y install python3 python3-venv apache2 php libapache2-mod-php supervisor iptables tcpdump
 
 # Python : venv dans /data + dépendances figées dans requirements.txt
 ENV VIRTUAL_ENV=/data/venv
@@ -19,6 +19,7 @@ WORKDIR /data
 RUN rm -f /var/www/html/index.html \
  && mkdir /var/www/html/phpmodbus \
  && cp /data/web/index.php /var/www/html/ \
+ && cp /data/web/firewall.php /var/www/html/ \
  && cp -r /data/web/pics /var/www/html/pics \
  && cp -r /data/web/phpmodbus/Phpmodbus /var/www/html/phpmodbus/Phpmodbus \
  && cp /data/web/phpmodbus/license.txt /var/www/html/phpmodbus/license.txt \

@@ -509,6 +509,8 @@ else
 <?php
 }
 ?>
+<br /><br />
+🛡️ <a href="firewall.php" title="Gestion du pare-feu local"><small>Pare-feu</small></a>
 </center>
 </td>
 <td width="180px" style="text-align: center; border: 1px solid black" valign="top">
