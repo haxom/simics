@@ -31,7 +31,7 @@ import json
 import os
 import secrets
 import time
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlparse
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 LISTEN_ADDR = "0.0.0.0"
@@ -171,7 +171,7 @@ def render_login(error=""):
     return LOGIN_PAGE.format(style=PAGE_STYLE, error=message)
 
 
-def render_dashboard(registry):
+def render_dashboard(registry, peers_full=False):
     rows = ""
     for key in sorted(registry):
         slot = registry[key]
@@ -186,7 +186,15 @@ def render_dashboard(registry):
         if scan_state == "blocked":
             peers_cell = '<span class="ko">🔒 aucun peer</span>'
         elif scan_state == "ok":
-            peers_cell = "<br />".join(html.escape(peer) for peer in peers)
+            if peers_full:
+                peers_cell = "<br />".join(html.escape(peer) for peer in peers)
+            else:
+                # vue compacte : un résumé d'une ligne (parc de 30 éoliennes),
+                # la liste complète reste accessible au survol (tooltip natif)
+                tooltip = html.escape("; ".join(peers), quote=True)
+                peers_cell = (
+                    f'<span title="{tooltip}">{len(peers)} peers vus</span>'
+                )
         else:
             peers_cell = '<span class="muted">—</span>'
         rows += f"""<tr>
@@ -199,12 +207,16 @@ def render_dashboard(registry):
 <td>{state}</td>
 </tr>"""
     title = time.strftime("%Y-%m-%d %H:%M:%S")
+    toggle = (
+        '<a href="/">vue compacte</a>' if peers_full
+        else '<a href="/?peers=full">vue détaillée</a>'
+    )
     return f"""<!doctype html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta http-equiv="refresh" content="{REFRESH}">
 <title>TurboElec C2 - beacons</title>{PAGE_STYLE}</head>
 <body>
-<h2>TurboElec C2 - beacons (maj {title})</h2>
+<h2>TurboElec C2 - beacons (maj {title}) — {toggle}</h2>
 <table>
 <tr><th>IP</th><th>Hostname</th><th>Premier</th><th>Dernier</th>
     <th>Beacons</th><th>Dernier scan peers</th><th>État</th></tr>
@@ -212,7 +224,7 @@ def render_dashboard(registry):
 </table>
 <p class="muted">🟢 actif : beacon &lt; {SILENCE_THRESHOLD} s ;
 🔴 silencieux : au-delà. « Dernier scan peers » : — jamais de scan,
-liste des voisins vus, ou 🔒 aucun peer.</p>
+résumé/liste des voisins vus (survol = liste), ou 🔒 aucun peer.</p>
 </body></html>"""
 
 
@@ -259,15 +271,23 @@ class C2Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b"C2 alive\n")
             return
-        if self.path not in ("/", ""):
+        url = urlparse(self.path)
+        if url.path not in ("/", ""):
             self.send_response(404)
             self.end_headers()
             return
+        # vue détaillée de la colonne peers : ?peers=full (la paire
+        # query est conservée par l'auto-refresh <meta>)
+        try:
+            query = parse_qs(url.query)
+        except (ValueError, UnicodeDecodeError):
+            query = {}
+        peers_full = query.get("peers") == ["full"]
         # mire : cookie de session obligatoire
         if self.cookie_token() != SESSION_TOKEN:
             self.show_login()
             return
-        body = render_dashboard(self.registry).encode("utf-8")
+        body = render_dashboard(self.registry, peers_full).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))

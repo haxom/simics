@@ -40,11 +40,15 @@ pare-feu local, même si toutes les connexions partagent une même IP de
 sortie (bridge QubesOS, NAT...).
 
 Colonne « Dernier scan peers » :
+
 - `—` : aucun balayage reçu pour cette éolienne ;
-- liste : voisins vus au dernier balayage (trafic sortant 502 OK) ;
-- 🔒 « aucun peer détecté — blocage sortant 502 ? » : le dernier
-  balayage n'a vu personne — validation immédiate de l'efficacité du
-  blocage Modbus par le stagiaire, sans attendre l'analyse PCAP.
+- résumé/liste : voisins vus au dernier balayage (trafic sortant 502 OK).
+  Vue compacte par défaut (parc de 30 éoliennes) : résumé d'une ligne,
+  la liste complète est au survol ; lien « vue détaillée » ou
+  `?peers=full` dans l'URL pour la liste à plat ;
+- 🔒 « aucun peer » : le dernier balayage n'a vu personne — validation
+  immédiate de l'efficacité du blocage Modbus par le stagiaire,
+  sans attendre l'analyse PCAP.
 
 Mot de passe par défaut : **`Ev1l_W3atherSyn4c`** (nom d'« outil
 attaquant », clin d'œil au camouflage `weather_sync` du malware). Pour
